@@ -1,6 +1,6 @@
 notis = require(game.ReplicatedStorage:WaitForChild("Notification"))
 notis.new("<Color=White>Hải Gaming<Color=/>"):Display()
-notis.new("<Color=Blue>Thiên lý ơi ... không..emo<Color=/>"):Display() 
+notis.new("<Color=Blue>Thiên lý ơi ... không..anh<Color=/>"):Display() 
 notis.new("<Color=Red>Hãy Sặp Roai Nếu Có Thể<Color=/>"):Display() 
 notis.new("<Color=Yellow>Exploit Use:<Color=/> ".. identifyexecutor()):Display() 
 ---------------------------------------------------------------------------------------------------------------------------------------------
