@@ -1,6 +1,6 @@
 notis = require(game.ReplicatedStorage:WaitForChild("Notification"))
 notis.new("<Color=White>Hải Gaming<Color=/>"):Display()
-notis.new("<Color=Blue>Thiên lý ơi ... không..em<Color=/>"):Display() 
+notis.new("<Color=Blue>Thiên lý ơi ... không<Color=/>"):Display() 
 notis.new("<Color=Red>Hãy Sặp Roai Nếu Có Thể<Color=/>"):Display() 
 notis.new("<Color=Yellow>Exploit Use:<Color=/> ".. identifyexecutor()):Display() 
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -7592,7 +7592,7 @@ ImageButton1.BorderSizePixel = 0
 ImageButton1.Position = UDim2.new(0.120833337, 0, 0.0952890813, 0)
 ImageButton1.Size = UDim2.new(0, 50, 0, 50)
 ImageButton1.Draggable = true
-ImageButton1.Image = "rbxassetid://8821055665"
+ImageButton1.Image = "rbxassetid://116054239243784"
 ImageButton1.MouseButton1Down:connect(function()
   game:GetService("VirtualInputManager"):SendKeyEvent(true,"LeftControl",false,game)
   game:GetService("VirtualInputManager"):SendKeyEvent(false,"LeftControl",false,game)
