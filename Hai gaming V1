@@ -3881,7 +3881,7 @@ end)
                 if _G.AutoObservation then
                     if game:GetService("Players").LocalPlayer.VisionRadius.Value >= 3000 then
                         game:GetService("StarterGui"):SetCore("SendNotification", {
-                            Icon = "rbxassetid://0";
+                            Icon = "rbxassetid://927083573";
                             Title = "Status Observation:", 
                             Text = "You Have Max Points"
                         })
