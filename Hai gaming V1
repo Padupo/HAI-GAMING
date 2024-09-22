@@ -1,6 +1,6 @@
 notis = require(game.ReplicatedStorage:WaitForChild("Notification"))
 notis.new("<Color=White>Hải Gaming<Color=/>"):Display()
-notis.new("<Color=Blue>Thiên lý ơi ... không...<Color=/>"):Display() 
+notis.new("<Color=Blue>Thiên lý ơi ... không..<Color=/>"):Display() 
 notis.new("<Color=Red>Hãy Sặp Roai Nếu Có Thể<Color=/>"):Display() 
 notis.new("<Color=Yellow>Exploit Use:<Color=/> ".. identifyexecutor()):Display() 
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -3881,7 +3881,7 @@ end)
                 if _G.AutoObservation then
                     if game:GetService("Players").LocalPlayer.VisionRadius.Value >= 3000 then
                         game:GetService("StarterGui"):SetCore("SendNotification", {
-                            Icon = "rbxassetid://8821055665";
+                            Icon = "rbxassetid://3341878695";
                             Title = "Status Observation:", 
                             Text = "You Have Max Points"
                         })
