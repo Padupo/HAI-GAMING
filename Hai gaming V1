@@ -2129,16 +2129,16 @@ end
 local Tabs = {
 	About = Window: AddTab({ Title = " Show Cak", Icon = "crown" }),
 	Main = Window:AddTab({ Title = "Main", Icon = "home" }),
-	Sh = Window:AddTab({ Title = "Shop", Icon = "shopping-cart" }),
+    Qs = Window:AddTab({ Title = "Get Item", Icon = "crown" }), 
 	Settings = Window:AddTab({ Title = "Setting", Icon = "settings" }),   
     Mt = Window:AddTab({ Title = " Material & Boss", Icon = "crown" }),    
-    De = Window:AddTab({ Title = " Fruit And Raid", Icon = "cherry" }), 
-    Qs = Window:AddTab({ Title = "Get Item", Icon = "arrow-up-crown" }),    
+    De = Window:AddTab({ Title = " Fruit And Raid", Icon = "cherry" }),    
     St = Window:AddTab({ Title = " Misc", Icon = "list-plus" }),    
     Lc = Window:AddTab({ Title = " Local Player", Icon = "box" }),   
     RC = Window:AddTab({ Title = "Upgrade Race V4", Icon = "chevrons-right" }),   
     Se = Window:AddTab({ Title = "Sea Event", Icon = "waves" }),  
-    Ms = Window:AddTab({ Title = "Farm Items", Icon = "crown" }),  
+    Ms = Window:AddTab({ Title = "Farm Items", Icon = "crown" }),
+    Sh = Window:AddTab({ Title = "Shop", Icon = "shopping-cart" }),
 }
 
 local Options = Fluent.Options
@@ -3881,7 +3881,7 @@ end)
                 if _G.AutoObservation then
                     if game:GetService("Players").LocalPlayer.VisionRadius.Value >= 3000 then
                         game:GetService("StarterGui"):SetCore("SendNotification", {
-                            Icon = "rbxassetid://16375477666";
+                            Icon = "rbxassetid://8821055665";
                             Title = "Status Observation:", 
                             Text = "You Have Max Points"
                         })
