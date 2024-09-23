@@ -4011,7 +4011,7 @@ end)
 
 local ui = Blacklib:Window("")
 
-local Dev = ui:AddTab("Thông Tin","rbxassetid://6026568198")
+local Dev = ui:AddTab("Thông Tin1","rbxassetid://6026568198")
 local Farm = ui:AddTab("Chính","rbxassetid://13075651575")
 local Auto = ui:AddTab("Nhiệm Vụ","rbxassetid://13075622619")
 local Stats = ui:AddTab("Chỉ Số","rbxassetid://7040410130")
