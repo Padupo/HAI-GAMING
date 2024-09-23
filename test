@@ -1,3 +1,8 @@
+
+
+
+
+
 if game.CoreGui:FindFirstChild("Hải Gaming") then
     game.CoreGui:FindFirstChild("Hải Gaming"):Destroy()
 end
@@ -4006,7 +4011,7 @@ end)
 
 local ui = Blacklib:Window("")
 
-local Dev = ui:AddTab("Thông Tin","rbxassetid://6026568198")
+local Min = ui:AddTab("Cài đặt","rbxassetid://11156061121")
 local Farm = ui:AddTab("Nhà","rbxassetid://13075651575")
 local Auto = ui:AddTab("Nhiệm Vụ","rbxassetid://13075622619")
 local Stats = ui:AddTab("Chỉ Số","rbxassetid://7040410130")
@@ -4016,9 +4021,9 @@ local Raid = ui:AddTab("raid","rbxassetid://11155986081")
 local TP = ui:AddTab("Di Chuyển","rbxassetid://11155851001")
 local Shop = ui:AddTab("Cửa Hàng","rbxassetid://6031265976")
 local Dee = ui:AddTab("Trái Ác Quỷ","rbxassetid://7044233235")
-local Min = ui:AddTab("Khác","rbxassetid://11156061121")
+local Dev = ui:AddTab("Thông Tin","rbxassetid://6026568198")
 
-local H = Dev:NewSection("Thông tin")
+local H = Dev:NewSection("Thông Tin")
 local Main = Farm:NewSection("Nhà")
 local M = Auto:NewSection("Nhiệm Vụ")
 local Ss = Stats:NewSection("Chỉ Số")
@@ -4028,7 +4033,7 @@ local R = Raid:NewSection("raid")
 local T = TP:NewSection("Di Chuyển")
 local S = Shop:NewSection("Cửa Hàng")
 local D = Dee:NewSection("Trái Ác Quỷ")
-local Misc = Min:NewSection(" Khác")
+local Misc = Min:NewSection("Cài đặt")
 
 local Time = H:AddLabel("Executor Time");spawn(function() getgenv().Time = true;while true do wait(.1) UpdateTime() end end);function UpdateTime() local date = os.date("*t");local hour = (date.hour) % 24;local ampm = hour < 12 and "AM" or "PM";local timezone = string.format("%02i:%02i:%02i %s", ((hour -1) % 12) + 1, date.min, date.sec, ampm);local datetime = string.format("%02d/%02d/%04d", date.day, date.month, date.year);local LocalizationService = game:GetService("LocalizationService");local Players = game:GetService("Players");local player = Players.LocalPlayer;local name = player.Name;local result, code = pcall(function()   return LocalizationService:GetCountryRegionForPlayerAsync(player)  end);Time:Set(" : " .. timezone);Time:Set("Executor Time: " .. datetime .. " [ " .. code .. " ]");spawn(function() if getgenv().Time then pcall(function()  while wait() do  Time()  end end) end end) end
 
