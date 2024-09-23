@@ -125,7 +125,7 @@ local Stats = Window:MakeTab({
     PremiumOnly = false
 })
 local Island = Window:MakeTab({
-    Name = "Dảo & ESP",
+    Name = "Đảo-ESP",
     Icon = "rbxassetid://9606628205",
     PremiumOnly = false
 })
