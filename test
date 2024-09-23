@@ -347,7 +347,7 @@ function Blacklib:Window()
     end)
     spawn(function()
         while task.wait() do
-            titlefunc:Refresh("_G.loading = true") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gamin") wait(.2) titlefunc:Refresh("Hải Gami") wait(.2) titlefunc:Refresh("Hải") wait(.2) titlefunc:Refresh("Hả") wait(.2) titlefunc:Refresh("Minh") wait(.9) titlefunc:Refresh("Hải G") wait(.2) titlefunc:Refresh("G") wait(.2) titlefunc:Refresh("_G.Reset = true") wait(.2) wait(.3)
+            titlefunc:Refresh("Hải Gaming V2") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gamin") wait(.2) titlefunc:Refresh("Hải Gami") wait(.2) titlefunc:Refresh("Hải") wait(.2) titlefunc:Refresh("Hả") wait(.2) titlefunc:Refresh("Minh") wait(.9) titlefunc:Refresh("Hải G") wait(.2) titlefunc:Refresh("G") wait(.2) titlefunc:Refresh("_G.Reset = true") wait(.2) wait(.3)
         end
     end)
     -- End Windows --
