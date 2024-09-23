@@ -347,7 +347,7 @@ function Blacklib:Window()
     end)
     spawn(function()
         while task.wait() do
-            titlefunc:Refresh("Hải Gaming V2") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gamin") wait(.2) titlefunc:Refresh("Hải Gami") wait(.2) titlefunc:Refresh("Hải") wait(.2) titlefunc:Refresh("Hả") wait(.2) titlefunc:Refresh("Minh") wait(.9) titlefunc:Refresh("Hải G") wait(.2) titlefunc:Refresh("G") wait(.2) titlefunc:Refresh("_G.Reset = true") wait(.2) wait(.3)
+            titlefunc:Refresh("Hải Gaming V2") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gaming") wait(.2) titlefunc:Refresh("Hải Gamin") wait(.2) titlefunc:Refresh("Hải Gami") wait(.2) titlefunc:Refresh("Hải") wait(.2) titlefunc:Refresh("Hả") wait(.2) titlefunc:Refresh("Minh") wait(.9) titlefunc:Refresh("Hải G") wait(.2) titlefunc:Refresh("G") wait(.2) titlefunc:Refresh("Hải Vietsub") wait(.2) wait(.3)
         end
     end)
     -- End Windows --
@@ -834,7 +834,7 @@ function Blacklib:Window()
                 ImageLabel.BorderSizePixel = 0
                 ImageLabel.Position = UDim2.new(0, 5, 0, 6)
                 ImageLabel.Size = UDim2.new(0, 18, 0, 18)
-                ImageLabel.Image = "rbxassetid://8825010231"
+                ImageLabel.Image = "rbxassetid://8821055665"
                 ImageLabel.ImageColor3 = Color3.fromRGB(180,180,180)
                 
                 Space.Name = "Space"
