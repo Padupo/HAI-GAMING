@@ -3,7 +3,7 @@
 
 
 
-if game.CoreGui:FindFirstChild("Hải Gaming V2") then
+if game.CoreGui:FindFirstChild("Hải Gaming") then
     game.CoreGui:FindFirstChild("hải Gaming"):Destroy()
 end
 
@@ -120,7 +120,7 @@ function Blacklib:Window()
     BlackTitle.Position = UDim2.new(0, 33, 0, 3)
     BlackTitle.Size = UDim2.new(0, 50, 0, 25)
     BlackTitle.Font = Enum.Font.GothamBold
-    BlackTitle.Text = "MingamingLib"
+    BlackTitle.Text = "Hải Gaming"
     BlackTitle.TextColor3 = Color3.fromRGB(180,180,180)
     BlackTitle.TextSize = 13.000
     BlackTitle.TextXAlignment = Enum.TextXAlignment.Left
