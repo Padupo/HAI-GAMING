@@ -1905,7 +1905,7 @@ local Misc = Misc:NewSection("Thiết lập")
 local RaceV4 = R:NewSection("Tộc V4")
 
 
-Main:Label("Server")
+Main:Label("Máy Chủ")
 
 Time = Main:Label("Executer Time")
 
@@ -1914,7 +1914,7 @@ local GameTime = math.floor(workspace.DistributedGameTime+0.5)
 local Hour = math.floor(GameTime/(60^2))%24
 local Minute = math.floor(GameTime/(60^1))%60
 local Second = math.floor(GameTime/(60^0))%60
-Time:Set("[GameTime] : Hours : "..Hour.." Minutes : "..Minute.." Seconds : "..Second)
+Time:Set("[Giờ chơi] : Giờ : "..Hour.." phút : "..Minute.." giây : "..Second)
 end
 
 spawn(function()
@@ -1955,7 +1955,7 @@ spawn(function()
 Main:Line()
 
 --// Setting Player
-Main:Label("👤 Local Player 👤")
+Main:Label("👤 Thiết lập hỗ trợ 👤")
 
 
 
@@ -1979,7 +1979,7 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
   end)
 end
 
-Main:Button("Boost Your FPS", function()
+Main:Button("Tăng FPS của bạn", function()
   local decalsyeeted = true
   local g = game
   local w = g.Workspace
@@ -2019,11 +2019,11 @@ Main:Button("Boost Your FPS", function()
   end
   end)
 
-Main:Button("Rejoin Server", "Rejoin on Server", function()
+Main:Button("Tham gia lại máy chủ", "Tham gia lại máy chủ", function()
   game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
   end)
 
-Main:Button("servers Hop", function()
+Main:Button("Máy chủ ít người", function()
   Hop()
   end)
 function Hop()
@@ -2090,7 +2090,7 @@ end
 Teleport()
 end
 
-Main:Button("Server Hop Lower Server",function()
+Main:Button("Máy Chủ Khác",function()
   local maxplayers, gamelink, goodserver, data_table = math.huge, "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
   if not _G.FailedServerID then _G.FailedServerID = {} end
 
@@ -2162,7 +2162,7 @@ spawn(function()
 end)
 
 
-Main:Label("⚙️ Config ⚙️")
+Main:Label("⚙️ Cấu hình ⚙️")
 
 --// Setting Farm
 local bringfrec = 250
@@ -2174,7 +2174,7 @@ local WeaponList = {
   "Melee","Devil Fruit","Sword","Gun"
 }
 
-Main:Dropdown("Select Weapon",WeaponList,function(weaponfunc)
+Main:Dropdown("Chọn vũ khí",WeaponList,function(weaponfunc)
   SelectWeapon = weaponfunc
   end)
 
@@ -2249,12 +2249,12 @@ spawn(function()
 end)
 
 FarmTable = {
-"Above",
-"Bellow",
-"Behind"
+"Bên trên",
+"Dưới đây",
+"Phía sau"
 }
 
-Main:Dropdown("Select Farm Type", FarmTable,function(value)
+Main:Dropdown("Chọn tầm úp", FarmTable,function(value)
     AutoFarmType = value
 end)
 spawn(function()
