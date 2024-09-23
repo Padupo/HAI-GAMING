@@ -3,7 +3,7 @@
 
 
 
-if game.CoreGui:FindFirstChild("Hải Gaming") then
+if game.CoreGui:FindFirstChild("Hải Gaming V2") then
     game.CoreGui:FindFirstChild("hải Gaming"):Destroy()
 end
 
@@ -110,7 +110,7 @@ function Blacklib:Window()
     BlackImage.BackgroundTransparency = 1.000
     BlackImage.Position = UDim2.new(0, 3, 0, 3)
     BlackImage.Size = UDim2.new(0, 25, 0, 25)
-    BlackImage.Image = "rbxassetid://13717478897"
+    BlackImage.Image = "rbxassetid://116054239243784"
     BlackImage.ImageColor3 = Color3.fromRGB(255,255,255)
     
     BlackTitle.Name = "BlackTitle"
