@@ -4,7 +4,7 @@
 
 
 if game.CoreGui:FindFirstChild("Hải Gaming") then
-    game.CoreGui:FindFirstChild("hải Gaming"):Destroy()
+    game.CoreGui:FindFirstChild("Hải Gaming"):Destroy()
 end
 
 local UserInputService = game:GetService("UserInputService")
@@ -38,7 +38,7 @@ function Blacklib:Window()
     local pingfunc = {}
     local timefunc = {}
     local Points = Instance.new("Frame")
-    local MingamingLib = Instance.new("ScreenGui")
+    local HaigamingLib = Instance.new("ScreenGui")
     local PlayTime = Instance.new("TextLabel")
     local PlayTimeCorner = Instance.new("UICorner")
     local WindowFrame = Instance.new("Frame")
@@ -53,12 +53,12 @@ function Blacklib:Window()
     local CloseButton = Instance.new("TextButton")
     
     -- Propertiers --
-    MingamingLib.Name = "MingamingLib"
-    MingamingLib.Parent = game.CoreGui
-    MingamingLib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    HaigamingLib.Name = "HaigamingLib"
+    HaigamingLib.Parent = game.CoreGui
+    HaigamingLib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
     Points.Name = "Points"
-    Points.Parent = MingamingLib
+    Points.Parent = HaigamingLib
     Points.BackgroundColor3 = _G.WindowBackgroundColor
     Points.BackgroundTransparency = 1.000
     Points.Size = UDim2.new(0, 800, 0, 600)
@@ -120,7 +120,7 @@ function Blacklib:Window()
     BlackTitle.Position = UDim2.new(0, 33, 0, 3)
     BlackTitle.Size = UDim2.new(0, 50, 0, 25)
     BlackTitle.Font = Enum.Font.GothamBold
-    BlackTitle.Text = "MingamingLib"
+    BlackTitle.Text = "HaigamingLib"
     BlackTitle.TextColor3 = Color3.fromRGB(180,180,180)
     BlackTitle.TextSize = 13.000
     BlackTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -4011,25 +4011,25 @@ end)
 
 local ui = Blacklib:Window("")
 
-local Dev = ui:AddTab("Thông Tin1","rbxassetid://6026568198")
-local Farm = ui:AddTab("Chính","rbxassetid://13075651575")
+
+local Farm = ui:AddTab("Nhà","rbxassetid://13075651575")
 local Auto = ui:AddTab("Nhiệm Vụ","rbxassetid://13075622619")
 local Stats = ui:AddTab("Chỉ Số","rbxassetid://7040410130")
 local Rac = ui:AddTab("Tộc V4","rbxassetid://11162889532")
 local Playy = ui:AddTab("Người Chơi","rbxassetid://7251993295")
-local Raid = ui:AddTab("Tập Kích","rbxassetid://11155986081")
+local Raid = ui:AddTab("raid","rbxassetid://11155986081")
 local TP = ui:AddTab("Di Chuyển","rbxassetid://11155851001")
 local Shop = ui:AddTab("Cửa Hàng","rbxassetid://6031265976")
 local Dee = ui:AddTab("Trái Ác Quỷ","rbxassetid://7044233235")
 local Min = ui:AddTab("Khác","rbxassetid://11156061121")
 
-local H = Dev:NewSection("Umm")
-local Main = Farm:NewSection("Chính")
+
+local Main = Farm:NewSection("Nhà")
 local M = Auto:NewSection("Nhiệm Vụ")
 local Ss = Stats:NewSection("Chỉ Số")
 local RaceV4 = Rac:NewSection("Tộc V4")
 local P = Playy:NewSection("Người Chơi")
-local R = Raid:NewSection("Tập Kích")
+local R = Raid:NewSection("raid")
 local T = TP:NewSection("Di Chuyển")
 local S = Shop:NewSection("Cửa Hàng")
 local D = Dee:NewSection("Trái Ác Quỷ")
