@@ -38,7 +38,7 @@ function Blacklib:Window()
     local pingfunc = {}
     local timefunc = {}
     local Points = Instance.new("Frame")
-    local HaigamingLib = Instance.new("ScreenGui")
+    local MingamingLib = Instance.new("ScreenGui")
     local PlayTime = Instance.new("TextLabel")
     local PlayTimeCorner = Instance.new("UICorner")
     local WindowFrame = Instance.new("Frame")
