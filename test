@@ -1,7 +1,7 @@
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Hải gaming v2",
     Text = "Đang tải...",
-    Icon = "rbxassetid://14904129682"
+    Icon = "rbxassetid://116054239243784"
 })
 
 wait(3)
