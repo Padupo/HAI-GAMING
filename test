@@ -4329,7 +4329,7 @@ spawn(function()
 end)
 Main:AddLabel("Cài Đặt")
 
-Main:AddToggle("Di Chuyển = Reset",false,function(Fast)
+Main:AddToggle("Bypass Tp = bug",false,function(Fast)
 BypassTP = Fast
 end)
 
