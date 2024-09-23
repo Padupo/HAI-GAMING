@@ -1,8 +1,3 @@
-
-
-
-
-
 if game.CoreGui:FindFirstChild("Hải Gaming") then
     game.CoreGui:FindFirstChild("Hải Gaming"):Destroy()
 end
@@ -4011,7 +4006,7 @@ end)
 
 local ui = Blacklib:Window("")
 
-
+local Dev = ui:AddTab("Thông Tin","rbxassetid://6026568198")
 local Farm = ui:AddTab("Nhà","rbxassetid://13075651575")
 local Auto = ui:AddTab("Nhiệm Vụ","rbxassetid://13075622619")
 local Stats = ui:AddTab("Chỉ Số","rbxassetid://7040410130")
@@ -4023,7 +4018,7 @@ local Shop = ui:AddTab("Cửa Hàng","rbxassetid://6031265976")
 local Dee = ui:AddTab("Trái Ác Quỷ","rbxassetid://7044233235")
 local Min = ui:AddTab("Khác","rbxassetid://11156061121")
 
-
+local H = Dev:NewSection("Thông tin")
 local Main = Farm:NewSection("Nhà")
 local M = Auto:NewSection("Nhiệm Vụ")
 local Ss = Stats:NewSection("Chỉ Số")
@@ -4329,7 +4324,7 @@ spawn(function()
 end)
 Main:AddLabel("Cài Đặt")
 
-Main:AddToggle("Bypass Tp = bug",false,function(Fast)
+Main:AddToggle("Di Chuyển = Reset",false,function(Fast)
 BypassTP = Fast
 end)
 
