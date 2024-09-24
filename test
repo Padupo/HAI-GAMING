@@ -2169,9 +2169,9 @@ UpdateClient1()
 end
 end)
 
-Main:Label("Script By RelzBlox#6078")
-Main:Button("Copy Discord Link",function()
-setclipboard("https://discord.com/invite/ba2jasaKn2") 
+Main:Label("Script By Hải Gaming")
+Main:Button("Copy  Link",function()
+setclipboard("https://hairoblox.xyz") 
 end)
 
 Main:Seperator("Level Farm")
