@@ -1,4 +1,4 @@
-local Update = loadstring(Game:HttpGet"https://roblox.relzscript.xyz/source/relzhub/library/pc.lua")()
+local Update = loadstring(Game:HttpGet"123")()
 local Alert = loadstring(Game:HttpGet"https://roblox.relzscript.xyz/source/relzhub/library/alert.lua")()
 local Library = Update:Window("Blox Fruits")
 local Main = Library:Tab("Main","")
