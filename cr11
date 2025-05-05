@@ -25,7 +25,7 @@ MatsuneA1["4"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.
 MatsuneA1["4"]["Size"] = UDim2.new(0, 50, 0, 56);
 MatsuneA1["4"]["BackgroundTransparency"] = 1;
 MatsuneA1["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-MatsuneA1["4"]["Text"] = [[tam dung]];
+MatsuneA1["4"]["Text"] = [[Tạm Dừng]];
 MatsuneA1["4"]["Position"] = UDim2.new(0, 0, -0.07273, 0);
 MatsuneA1["5"] = Instance.new("UIStroke", MatsuneA1["4"]);
 MatsuneA1["5"]["Color"] = Color3.fromRGB(255, 0, 0);
@@ -3070,8 +3070,8 @@ local library = {}
 _G.Color = Color3.fromRGB(154, 240, 17) 
 _G.imageLogo = "rbxassetid://119198835819797"
 _G.Logo = "rbxassetid://119198835819797"
-_G.NameHub = "Made By hoapoytv Roblox" -- ชื่อ Hub
-_G.Title = "Hoa poy tv Roblox Script Blox Fruits" -- คำอธิบาย
+_G.NameHub = "Vietsub by Hòa Poy Tv" -- ชื่อ Hub
+_G.Title = "hoapoytv Roblox Script Blox Fruits" -- คำอธิบาย
 -----------------------------------------------------------------
 
 local isUIEnabled = true 
@@ -3247,7 +3247,55 @@ function dragify(Frame, object)
 	end
 	)
 end
+-- Tạo một ScreenGui mới riêng biệt cho Text này
+local TopTextGui = Instance.new("ScreenGui")
+TopTextGui.Name = "PermanentTopTextGui" -- Đặt tên để dễ nhận biết
+TopTextGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+TopTextGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- Hoặc Global nếu cần ưu tiên cao hơn
+TopTextGui.ResetOnSpawn = false -- Đảm bảo không bị reset khi chết
 
+-- Tạo TextLabel
+local TopTextLabel = Instance.new("TextLabel")
+TopTextLabel.Name = "MyPermanentLabel"
+TopTextLabel.Parent = TopTextGui
+
+-- ----- Tùy chỉnh TextLabel -----
+
+-- 1. Vị trí: Giữa trên cùng màn hình
+TopTextLabel.AnchorPoint = Vector2.new(0.5, 0) -- Đặt điểm neo ở giữa-trên của Label
+TopTextLabel.Position = UDim2.new(0.5, 0, 0, 5) -- 0.5 = giữa ngang, 0 = sát mép trên, 5 pixels để cách lề trên một chút
+
+-- 2. Kích thước: "Vừa phải" - Bạn có thể điều chỉnh các giá trị này
+TopTextLabel.Size = UDim2.new(0, 400, 0, 30) -- Ví dụ: Rộng 400px, Cao 30px
+
+-- 3. Nội dung Text: Thay đổi text bạn muốn hiển thị ở đây
+TopTextLabel.Text = "Made By Hòa Poy Tv - Chúc bạn chơi game vui vẻ!" -- << THAY TEXT Ở ĐÂY
+
+-- 4. Định dạng Font chữ:
+TopTextLabel.Font = Enum.Font.SourceSansBold -- Chọn Font (ví dụ: SourceSansBold, GothamBold,...)
+TopTextLabel.TextSize = 18 -- Chỉnh cỡ chữ
+TopTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- Màu chữ (ví dụ: trắng)
+TopTextLabel.TextWrapped = true -- Cho phép xuống dòng nếu text quá dài
+TopTextLabel.TextXAlignment = Enum.TextXAlignment.Center -- Căn giữa text theo chiều ngang
+TopTextLabel.TextYAlignment = Enum.TextYAlignment.Center -- Căn giữa text theo chiều dọc
+
+-- 5. Nền và Viền:
+TopTextLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Màu nền (ví dụ: đen)
+TopTextLabel.BackgroundTransparency = 0.4 -- Độ trong suốt của nền (0 = không trong suốt, 1 = hoàn toàn trong suốt)
+TopTextLabel.BorderSizePixel = 0 -- Kích thước viền (nếu muốn)
+-- TopTextLabel.BorderColor3 = Color3.fromRGB(255, 255, 255) -- Màu viền (nếu có)
+
+-- 6. Thứ tự hiển thị (Quan trọng nếu có nhiều UI)
+TopTextLabel.ZIndex = 10 -- Đặt giá trị cao để đảm bảo nó nằm trên các UI khác (trừ khi bạn muốn menu toggle nằm trên)
+
+-- (Tùy chọn) Thêm hiệu ứng viền chữ
+local TextStroke = Instance.new("UIStroke")
+TextStroke.Color = Color3.fromRGB(0, 0, 0) -- Màu viền chữ (ví dụ: đen)
+TextStroke.Thickness = 1 -- Độ dày viền chữ
+TextStroke.Transparency = 0 -- Độ trong suốt viền chữ (0 = rõ nhất)
+TextStroke.Parent = TopTextLabel
+
+-- [[ Kết thúc đoạn code thêm Text cố định ]]
 local UI = Instance.new("ScreenGui")
 UI.Name = randomString
 UI.Parent = game.CoreGui:WaitForChild("RobloxGui"):WaitForChild("Modules")
@@ -3368,7 +3416,7 @@ end)
 
 -- Click event: copy Discord link
 Discord.MouseButton1Click:Connect(function()
-    (setclipboard or toclipboard)("https://discord.gg/SpJQ3XVEJ8")
+    (setclipboard or toclipboard)("https://www.youtube.com/@hoapoytv/videos")
     wait(.1)
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Discord",
@@ -4758,38 +4806,38 @@ end
 
 local Window = library:NaJa()
 
-local Main = Window:Tab("General","14477284625")
-local AutoQuest = Window:Tab("Items Quest","11446859498")
-local Events = Window:Tab("Auto Sea Event","10734941354")
-local Racer = Window:Tab("Race V4 & Esp","10747372167")
+local Main = Window:Tab("Chính","14477284625")
+local AutoQuest = Window:Tab("Nhiệm vụ vật phẩm","11446859498")
+local Events = Window:Tab("Sự kiện biển tự động","10734941354")
+local Racer = Window:Tab("Tộc V4 & ESP,"10747372167")
 local RaidFruit = Window:Tab("Raid & Fruits","10734975692")
-local Playerrss = Window:Tab("Teleport & PVP","10734910680")
-local MiscShop = Window:Tab("Shopee & Misc","10723434557")
-local AutoStatus = Window:Tab("Status Server","10709770317")
+local Playerrss = Window:Tab("Dịch chuyển & PVP","10734910680")
+local MiscShop = Window:Tab("Mua sắm & Khác","10723434557")
+local AutoStatus = Window:Tab("Trạng thái máy chủ","10709770317")
 
-local AutoFarm = Main:Section("Auto Main Farm","Left")
-local Settings = Main:Section("Settings Mastery","Right")
+local AutoFarm = Main:Section("Auto farm chính","Left")
+local Settings = Main:Section("Cài đặt thông thạo","Right")
 
-local Items = AutoQuest:Section("Auto Items Quest","Left")
-local Dragon = AutoQuest:Section("Auto Dragon Quest","Right")
+local Items = AutoQuest:Section("Tự động làm nhiệm vụ vật phẩm","Left")
+local Dragon = AutoQuest:Section("Tự động nhiệm vụ Rồng","Right")
 
-local Volcano = Events:Section("Auto Prehistoric","Left")
-local Events = Events:Section("Auto Events","Right")
+local Volcano = Events:Section("Tự động sự kiện thời tiền sử","Left")
+local Events = Events:Section("Tự động sự kiện","Right")
 
-local Trailers = Racer:Section("Auto Trailer V4","Left")
-local Espbruh = Racer:Section("Auto Esp Player","Right")
+local Trailers = Racer:Section("Tự động làm V4","Left")
+local Espbruh = Racer:Section("Tự động ESP người chơi","Right")
 
-local AutoRaid = RaidFruit:Section("Auto Raid Fruit","Left")
-local Autofruit = RaidFruit:Section("Auto Random Fruit","Right")
+local AutoRaid = RaidFruit:Section("Tự động raid trái ác quỷ","Left")
+local Autofruit = RaidFruit:Section("Tự động lấy trái ngẫu nhiên","Right")
 
-local Teleport = Playerrss:Section("Teleport Island","Left")
-local Playersss = Playerrss:Section("Players Combat","Right")
+local Teleport = Playerrss:Section("Dịch chuyển đảo","Left")
+local Playersss = Playerrss:Section("Giao chiến người chơi","Right")
 
-local TikTokShop = MiscShop:Section("Lazada Shopee","Left")
-local AutoMisc = MiscShop:Section("Misc Auto","Right")
+local TikTokShop = MiscShop:Section("Mua hàng","Left")
+local AutoMisc = MiscShop:Section("Tự động khác","Right")
 
-local Status = AutoStatus:Section("Status Number","Left")
-local StatusTime = AutoStatus:Section("Status Time Game","Right")
+local Status = AutoStatus:Section(" Số lượng trạng thái","Left")
+local StatusTime = AutoStatus:Section("Thời gian trong game","Right")
 
 _G.SelectWeapon = "Melee"
   AutoFarm:Dropdown("Select Weapons",{"Melee","Sword","Gun","Blox Fruit"},{"Melee"},function(v)
