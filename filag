@@ -1,65 +1,319 @@
 -- Services
+local Lighting = game:GetService("Lighting")
+local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui") -- Giữ lại nếu bạn vẫn muốn thông báo chào mừng
+local UserSettings = UserSettings() -- Để có thể truy cập UserGameSettings
+local UserGameSettings = UserSettings:GetService("UserGameSettings")
 
--- [[ PHẦN HIỂN THỊ FPS ĐƠN GIẢN ]]
+-- Original Lighting Values (to restore later)
+local originalFogEnd = Lighting.FogEnd
+local originalFogStart = Lighting.FogStart
+local originalFogColor = Lighting.FogColor
+local originalAmbient = Lighting.Ambient
+local originalColorShift_Bottom = Lighting.ColorShift_Bottom
+local originalColorShift_Top = Lighting.ColorShift_Top
+local originalGlobalShadows = Lighting.GlobalShadows
+local originalBrightness = Lighting.Brightness
+local originalEnvDiffuseScale = Lighting.EnvironmentDiffuseScale
+local originalEnvSpecularScale = Lighting.EnvironmentSpecularScale
+-- local originalQualityLevel = UserGameSettings.SavedQualityLevel -- Lưu Quality Level gốc
 
--- ScreenGui để chứa FPS Label
-local fpsScreenGui = Instance.new("ScreenGui")
-fpsScreenGui.Name = "FPScounterUI"
-fpsScreenGui.ResetOnSpawn = false
-fpsScreenGui.DisplayOrder = 10000 -- Đảm bảo nó ở trên cùng
+-- State Variables for Features
+local isFogRemoved = false
+local isFullbrightActive = false
+local isGraphicsOptimized = false
 
--- TextLabel để hiển thị FPS
+-- UI Elements
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "UltimateEffectsUI"
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999
+
+-- Main Window
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainWindow"
+mainFrame.Size = UDim2.new(0, 300, 0, 280) -- Tăng chiều cao cho nút mới
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 38, 46)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
+
+local mainFrameCorner = Instance.new("UICorner")
+mainFrameCorner.CornerRadius = UDim.new(0, 8)
+mainFrameCorner.Parent = mainFrame
+
+local mainFrameStroke = Instance.new("UIStroke")
+mainFrameStroke.Color = Color3.fromRGB(25, 28, 36)
+mainFrameStroke.Thickness = 2
+mainFrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+mainFrameStroke.Parent = mainFrame
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.BackgroundColor3 = Color3.fromRGB(45, 48, 56)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -10, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(220, 225, 230)
+titleLabel.Text = "Client Enhancer"
+titleLabel.Font = Enum.Font.GothamSemibold
+titleLabel.TextSize = 18
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+local accentLine = Instance.new("Frame")
+accentLine.Name = "AccentLine"
+accentLine.Size = UDim2.new(1, 0, 0, 2)
+accentLine.Position = UDim2.new(0, 0, 1, -2)
+accentLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+accentLine.BorderSizePixel = 0
+accentLine.Parent = titleBar
+
+-- Content Area
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "ContentFrame"
+contentFrame.Size = UDim2.new(1, -20, 1, -(titleBar.Size.Y.Offset + 10 + 10))
+contentFrame.Position = UDim2.new(0, 10, 0, titleBar.Size.Y.Offset + 10)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
+-- Nút No Fog (Nhìn Xa)
+local fogFeatureButton = Instance.new("TextButton")
+fogFeatureButton.Name = "FogFeatureButton"
+fogFeatureButton.Size = UDim2.new(1, 0, 0, 40)
+fogFeatureButton.Position = UDim2.new(0, 0, 0, 10)
+fogFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
+fogFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
+fogFeatureButton.Text = "Enable No Fog"
+fogFeatureButton.Font = Enum.Font.SourceSansSemibold
+fogFeatureButton.TextSize = 16
+fogFeatureButton.Parent = contentFrame
+local fogButtonCorner = Instance.new("UICorner"); fogButtonCorner.CornerRadius = UDim.new(0,6); fogButtonCorner.Parent = fogFeatureButton
+local fogButtonStroke = Instance.new("UIStroke"); fogButtonStroke.Color = Color3.fromRGB(40,43,50); fogButtonStroke.Thickness = 1.5; fogButtonStroke.Parent = fogFeatureButton
+
+-- Nút Full Bright (Sáng Full)
+local fullbrightFeatureButton = Instance.new("TextButton")
+fullbrightFeatureButton.Name = "FullbrightFeatureButton"
+fullbrightFeatureButton.Size = UDim2.new(1, 0, 0, 40)
+fullbrightFeatureButton.Position = UDim2.new(0, 0, 0, fogFeatureButton.Position.Y.Offset + fogFeatureButton.Size.Y.Offset + 10)
+fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
+fullbrightFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
+fullbrightFeatureButton.Text = "Enable Full Bright"
+fullbrightFeatureButton.Font = Enum.Font.SourceSansSemibold
+fullbrightFeatureButton.TextSize = 16
+fullbrightFeatureButton.Parent = contentFrame
+local fullbrightButtonCorner = Instance.new("UICorner"); fullbrightButtonCorner.CornerRadius = UDim.new(0,6); fullbrightButtonCorner.Parent = fullbrightFeatureButton
+local fullbrightButtonStroke = Instance.new("UIStroke"); fullbrightButtonStroke.Color = Color3.fromRGB(40,43,50); fullbrightButtonStroke.Thickness = 1.5; fullbrightButtonStroke.Parent = fullbrightFeatureButton
+
+-- Nút Optimize Graphics (Fix Lag tiềm năng)
+local optimizeGraphicsButton = Instance.new("TextButton")
+optimizeGraphicsButton.Name = "OptimizeGraphicsButton"
+optimizeGraphicsButton.Size = UDim2.new(1, 0, 0, 40)
+optimizeGraphicsButton.Position = UDim2.new(0, 0, 0, fullbrightFeatureButton.Position.Y.Offset + fullbrightFeatureButton.Size.Y.Offset + 10)
+optimizeGraphicsButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
+optimizeGraphicsButton.TextColor3 = Color3.fromRGB(200, 205, 210)
+optimizeGraphicsButton.Text = "Enable Optimize Graphics"
+optimizeGraphicsButton.Font = Enum.Font.SourceSansSemibold
+optimizeGraphicsButton.TextSize = 16
+optimizeGraphicsButton.Parent = contentFrame
+local optimizeButtonCorner = Instance.new("UICorner"); optimizeButtonCorner.CornerRadius = UDim.new(0,6); optimizeButtonCorner.Parent = optimizeGraphicsButton
+local optimizeButtonStroke = Instance.new("UIStroke"); optimizeButtonStroke.Color = Color3.fromRGB(40,43,50); optimizeButtonStroke.Thickness = 1.5; optimizeButtonStroke.Parent = optimizeGraphicsButton
+
+
+-- Nút bật/tắt UI
+local toggleUiButton = Instance.new("TextButton")
+toggleUiButton.Name = "ToggleUiButton"
+toggleUiButton.Size = UDim2.new(0, 120, 0, 30)
+toggleUiButton.Position = UDim2.new(0, 15, 0, 15)
+toggleUiButton.BackgroundColor3 = Color3.fromRGB(45, 48, 56)
+toggleUiButton.TextColor3 = Color3.fromRGB(220, 225, 230)
+toggleUiButton.Text = "Toggle UI (F1)"
+toggleUiButton.Font = Enum.Font.SourceSansBold
+toggleUiButton.TextSize = 14
+toggleUiButton.Parent = screenGui
+local toggleUiCorner = Instance.new("UICorner"); toggleUiCorner.CornerRadius = UDim.new(0,6); toggleUiCorner.Parent = toggleUiButton
+local toggleUiStroke = Instance.new("UIStroke"); toggleUiStroke.Color = Color3.fromRGB(25,28,36); toggleUiStroke.Thickness = 1.5; toggleUiStroke.Parent = toggleUiButton
+
+-- FPS Counter Label (Tách biệt với MainFrame)
 local fpsLabel = Instance.new("TextLabel")
 fpsLabel.Name = "FPSLabel"
-fpsLabel.Size = UDim2.new(0, 100, 0, 30)         -- Kích thước label
-fpsLabel.Position = UDim2.new(0, 10, 0, 10)      -- Vị trí (góc trên bên trái, padding 10px)
-fpsLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Màu nền tối
-fpsLabel.BackgroundTransparency = 0.3            -- Hơi trong suốt
-fpsLabel.BorderColor3 = Color3.fromRGB(50, 50, 50)
+fpsLabel.Size = UDim2.new(0, 110, 0, 28)
+fpsLabel.Position = UDim2.new(1, -125, 0, 15) -- Góc trên bên phải, dưới nút ToggleUI một chút
+fpsLabel.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
+fpsLabel.BackgroundTransparency = 0.2
+fpsLabel.BorderColor3 = Color3.fromRGB(88, 101, 242) -- Màu viền giống accent
 fpsLabel.BorderSizePixel = 1
-fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Màu chữ xanh lá
-fpsLabel.Font = Enum.Font.SourceSansBold        -- Font chữ
-fpsLabel.TextSize = 16
+fpsLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+fpsLabel.Font = Enum.Font.Code -- Font code cho FPS
+fpsLabel.TextSize = 14
 fpsLabel.Text = "FPS: ..."
 fpsLabel.TextXAlignment = Enum.TextXAlignment.Center
-fpsLabel.Parent = fpsScreenGui
+fpsLabel.Parent = screenGui
+local fpsCorner = Instance.new("UICorner"); fpsCorner.CornerRadius = UDim.new(0,5); fpsCorner.Parent = fpsLabel
 
--- Thêm bo góc cho đẹp hơn (tùy chọn)
-local fpsCorner = Instance.new("UICorner")
-fpsCorner.CornerRadius = UDim.new(0, 5)
-fpsCorner.Parent = fpsLabel
 
--- Thêm ScreenGui vào PlayerGui
-fpsScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- Vòng lặp cập nhật FPS
-RunService.RenderStepped:Connect(function(deltaTime)
-    local currentFps = workspace:GetRealPhysicsFPS()
-    fpsLabel.Text = string.format("FPS: %.0f", currentFps)
-
-    -- Thay đổi màu sắc dựa trên FPS (tùy chọn)
-    if currentFps < 30 then
-        fpsLabel.TextColor3 = Color3.fromRGB(255, 80, 80) -- Đỏ
-    elseif currentFps < 55 then
-        fpsLabel.TextColor3 = Color3.fromRGB(255, 220, 80) -- Vàng
+-- FUNCTIONS FOR FEATURES
+local function updateFeatureButtonStates()
+    if isFogRemoved then
+        fogFeatureButton.Text = "Disable No Fog (Active)"
+        fogFeatureButton.BackgroundColor3 = Color3.fromRGB(76, 175, 80)
+        fogFeatureButton.TextColor3 = Color3.fromRGB(240, 240, 240)
     else
-        fpsLabel.TextColor3 = Color3.fromRGB(80, 255, 80) -- Xanh lá (mặc định khi tốt)
+        fogFeatureButton.Text = "Enable No Fog"
+        fogFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
+        fogFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
+    end
+
+    if isFullbrightActive then
+        fullbrightFeatureButton.Text = "Disable Full Bright (Active)"
+        fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(76, 175, 80)
+        fullbrightFeatureButton.TextColor3 = Color3.fromRGB(240, 240, 240)
+    else
+        fullbrightFeatureButton.Text = "Enable Full Bright"
+        fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
+        fullbrightFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
+    end
+
+    if isGraphicsOptimized then
+        optimizeGraphicsButton.Text = "Disable Optimize (Active)"
+        optimizeGraphicsButton.BackgroundColor3 = Color3.fromRGB(76, 175, 80)
+        optimizeGraphicsButton.TextColor3 = Color3.fromRGB(240, 240, 240)
+    else
+        optimizeGraphicsButton.Text = "Enable Optimize Graphics"
+        optimizeGraphicsButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
+        optimizeGraphicsButton.TextColor3 = Color3.fromRGB(200, 205, 210)
+    end
+end
+
+-- No Fog (Nhìn Xa)
+local function applyFogSettings()
+    Lighting.FogEnd = 1e10
+    Lighting.FogStart = 1e10
+    Lighting.FogColor = Color3.new(1, 1, 1)
+end
+local function restoreFogSettings()
+    Lighting.FogEnd = originalFogEnd
+    Lighting.FogStart = originalFogStart
+    Lighting.FogColor = originalFogColor
+end
+local function toggleFogFeature()
+    isFogRemoved = not isFogRemoved
+    if isFogRemoved then applyFogSettings(); StarterGui:SetCore("SendNotification", {Title="No Fog", Text="Activated!", Duration=2})
+    else restoreFogSettings(); StarterGui:SetCore("SendNotification", {Title="No Fog", Text="Deactivated.", Duration=2}) end
+    updateFeatureButtonStates()
+end
+
+-- Full Bright (Sáng Full)
+local function applyFullbrightSettings()
+    Lighting.Ambient = Color3.new(1, 1, 1)
+    Lighting.ColorShift_Bottom = Color3.new(1, 1, 1)
+    Lighting.ColorShift_Top = Color3.new(1, 1, 1)
+end
+local function restoreFullbrightSettings()
+    Lighting.Ambient = originalAmbient
+    Lighting.ColorShift_Bottom = originalColorShift_Bottom
+    Lighting.ColorShift_Top = originalColorShift_Top
+end
+local function toggleFullbrightFeature()
+    isFullbrightActive = not isFullbrightActive
+    if isFullbrightActive then applyFullbrightSettings(); StarterGui:SetCore("SendNotification", {Title="Full Bright", Text="Activated!", Duration=2})
+    else restoreFullbrightSettings(); StarterGui:SetCore("SendNotification", {Title="Full Bright", Text="Deactivated.", Duration=2}) end
+    updateFeatureButtonStates()
+end
+
+-- Optimize Graphics (Fix Lag tiềm năng)
+local function applyOptimizeSettings()
+    Lighting.GlobalShadows = false
+    Lighting.Brightness = math.max(0.3, originalBrightness * 0.8) -- Giảm 20%, tối thiểu 0.3
+    Lighting.EnvironmentDiffuseScale = math.max(0, originalEnvDiffuseScale * 0.5) -- Giảm 50%
+    Lighting.EnvironmentSpecularScale = math.max(0, originalEnvSpecularScale * 0.5) -- Giảm 50%
+    -- UserGameSettings.SavedQualityLevel = Enum.SavedQualitySetting.Level1 -- Graphics level thấp nhất
+    -- Lưu ý: Thay đổi SavedQualityLevel có thể cần game restart để áp dụng hoàn toàn hoặc có thể bị game ghi đè.
+end
+local function restoreOptimizeSettings()
+    Lighting.GlobalShadows = originalGlobalShadows
+    Lighting.Brightness = originalBrightness
+    Lighting.EnvironmentDiffuseScale = originalEnvDiffuseScale
+    Lighting.EnvironmentSpecularScale = originalEnvSpecularScale
+    -- UserGameSettings.SavedQualityLevel = originalQualityLevel
+end
+local function toggleOptimizeFeature()
+    isGraphicsOptimized = not isGraphicsOptimized
+    if isGraphicsOptimized then applyOptimizeSettings(); StarterGui:SetCore("SendNotification", {Title="Optimize Graphics", Text="Activated!", Duration=2})
+    else restoreOptimizeSettings(); StarterGui:SetCore("SendNotification", {Title="Optimize Graphics", Text="Deactivated.", Duration=2}) end
+    updateFeatureButtonStates()
+end
+
+
+-- UI Interaction Logic
+mainFrame.Visible = false
+
+toggleUiButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if input.KeyCode == Enum.KeyCode.F1 then -- Hoặc phím bạn muốn, ví dụ RightControl
+        mainFrame.Visible = not mainFrame.Visible
     end
 end)
 
--- Thông báo chào mừng (nếu bạn vẫn muốn giữ lại từ các phiên bản trước)
-StarterGui:SetCore(
-    "SendNotification",
-    {
-        Title = "Chào mừng!",
-        Text = "FPS Counter đã được tải.",
-        Duration = 3
-    }
-)
+-- Connect Feature Button Clicks
+fogFeatureButton.MouseButton1Click:Connect(toggleFogFeature)
+fullbrightFeatureButton.MouseButton1Click:Connect(toggleFullbrightFeature)
+optimizeGraphicsButton.MouseButton1Click:Connect(toggleOptimizeFeature)
 
-print("Simple FPS Counter Loaded.")
+-- Persistent checks (chỉ áp dụng nếu feature đang bật)
+Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function() if isFogRemoved then applyFogSettings() end end)
+Lighting:GetPropertyChangedSignal("FogStart"):Connect(function() if isFogRemoved then applyFogSettings() end end)
+Lighting:GetPropertyChangedSignal("FogColor"):Connect(function() if isFogRemoved then applyFogSettings() end end)
 
--- [[ KẾT THÚC PHẦN HIỂN THỊ FPS ĐƠN GIẢN ]]
+Lighting.Changed:Connect(function(property)
+    if isFogRemoved and (property == "FogEnd" or property == "FogStart" or property == "FogColor") then
+        applyFogSettings()
+    end
+    if isFullbrightActive and (property == "Ambient" or property == "ColorShift_Bottom" or property == "ColorShift_Top") then
+        applyFullbrightSettings()
+    end
+    if isGraphicsOptimized and (property == "GlobalShadows" or property == "Brightness" or property == "EnvironmentDiffuseScale" or property == "EnvironmentSpecularScale") then
+        applyOptimizeSettings()
+    end
+end)
+
+-- Cập nhật FPS Label
+RunService.RenderStepped:Connect(function(deltaTime)
+    local currentFps = workspace:GetRealPhysicsFPS()
+    fpsLabel.Text = string.format("FPS: %.0f", currentFps)
+    if currentFps < 30 then fpsLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+    elseif currentFps < 55 then fpsLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
+    else fpsLabel.TextColor3 = Color3.fromRGB(80, 255, 80) end
+end)
+
+
+-- Initial Notifications
+StarterGui:SetCore("SendNotification", {
+    Title = "Client Enhancer",
+    Text = "Ready! Press F1 to toggle UI.",
+    Duration = 5
+})
+
+-- Add GUI to PlayerGui
+screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Initialize button states on load
+updateFeatureButtonStates()
+
+print("Client Enhancer UI Loaded with FPS, NoFog, FullBright, and Optimize Graphics.")
