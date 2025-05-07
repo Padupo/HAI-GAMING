@@ -1,0 +1,128 @@
+-- Services
+local Players = game:GetService("Players")
+
+-- UI Elements
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ModernUI"
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999 -- Ensure it's generally on top
+
+-- Main Window
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainWindow"
+mainFrame.Size = UDim2.new(0, 350, 0, 250) -- Kích thước cửa sổ
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125) -- Căn giữa màn hình
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 38, 46) -- Màu nền chính (xám đậm)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true -- Cho phép kéo thả
+mainFrame.Draggable = true -- Kích hoạt kéo thả
+mainFrame.ClipsDescendants = true -- Quan trọng để UICorner hoạt động đúng
+mainFrame.Parent = screenGui
+
+-- Bo góc cho Main Window
+local mainFrameCorner = Instance.new("UICorner")
+mainFrameCorner.CornerRadius = UDim.new(0, 8) -- Độ bo góc
+mainFrameCorner.Parent = mainFrame
+
+-- Viền cho Main Window
+local mainFrameStroke = Instance.new("UIStroke")
+mainFrameStroke.Color = Color3.fromRGB(25, 28, 36) -- Màu viền (xám tối hơn)
+mainFrameStroke.Thickness = 2
+mainFrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+mainFrameStroke.Parent = mainFrame
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 35) -- Chiều cao của thanh tiêu đề
+titleBar.BackgroundColor3 = Color3.fromRGB(45, 48, 56) -- Màu nền thanh tiêu đề
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+-- Tiêu đề
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -10, 1, 0) -- Chiếm gần hết chiều rộng, trừ chút padding
+titleLabel.Position = UDim2.new(0, 10, 0, 0) -- Căn lề trái với padding
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(220, 225, 230) -- Màu chữ tiêu đề (trắng ngà)
+titleLabel.Text = "My Awesome UI"
+titleLabel.Font = Enum.Font.GothamSemibold -- Font cho tiêu đề (thay bằng SourceSansSemibold nếu thích)
+titleLabel.TextSize = 18
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- Dải màu nhấn dưới Title Bar
+local accentLine = Instance.new("Frame")
+accentLine.Name = "AccentLine"
+accentLine.Size = UDim2.new(1, 0, 0, 2) -- Dải màu mỏng
+accentLine.Position = UDim2.new(0, 0, 1, -2) -- Đặt ngay dưới titleBar
+accentLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Màu nhấn (ví dụ: Discord blurple)
+accentLine.BorderSizePixel = 0
+accentLine.Parent = titleBar -- Parent vào titleBar để nó di chuyển cùng
+
+-- Content Area (Nơi bạn sẽ đặt các nút và nội dung khác)
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "ContentFrame"
+contentFrame.Size = UDim2.new(1, -20, 1, - (titleBar.Size.Y.Offset + 10 + 10) ) -- Trừ đi chiều cao titleBar và padding trên/dưới
+contentFrame.Position = UDim2.new(0, 10, 0, titleBar.Size.Y.Offset + 10) -- Đặt dưới titleBar, có padding
+contentFrame.BackgroundTransparency = 1 -- Trong suốt, chỉ để nhóm các yếu tố
+contentFrame.Parent = mainFrame
+
+-- Ví dụ một TextLabel trong Content Area
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Name = "InfoLabel"
+infoLabel.Size = UDim2.new(1, 0, 0, 50)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.fromRGB(180, 185, 190)
+infoLabel.Text = "Các nút chức năng sẽ được thêm vào đây!"
+infoLabel.Font = Enum.Font.SourceSans
+infoLabel.TextSize = 16
+infoLabel.TextWrapped = true
+infoLabel.TextYAlignment = Enum.TextYAlignment.Top
+infoLabel.Parent = contentFrame
+
+-- Nút bật/tắt UI (ví dụ)
+local toggleUiButton = Instance.new("TextButton")
+toggleUiButton.Name = "ToggleUiButton"
+toggleUiButton.Size = UDim2.new(0, 120, 0, 30)
+toggleUiButton.Position = UDim2.new(0, 15, 0, 15) -- Góc trên bên trái màn hình
+toggleUiButton.BackgroundColor3 = Color3.fromRGB(45, 48, 56)
+toggleUiButton.TextColor3 = Color3.fromRGB(220, 225, 230)
+toggleUiButton.Text = "Toggle UI (F1)"
+toggleUiButton.Font = Enum.Font.SourceSansBold
+toggleUiButton.TextSize = 14
+toggleUiButton.Parent = screenGui
+
+local toggleUiCorner = Instance.new("UICorner")
+toggleUiCorner.CornerRadius = UDim.new(0, 6)
+toggleUiCorner.Parent = toggleUiButton
+
+local toggleUiStroke = Instance.new("UIStroke")
+toggleUiStroke.Color = Color3.fromRGB(25, 28, 36)
+toggleUiStroke.Thickness = 1.5
+toggleUiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+toggleUiStroke.Parent = toggleUiButton
+
+
+-- Logic ẩn/hiện UI (ví dụ, có thể gán vào phím F1 hoặc nút)
+mainFrame.Visible = false -- Bắt đầu ẩn
+
+toggleUiButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- Optional: Toggle with a key (e.g., F1)
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if input.KeyCode == Enum.KeyCode.F1 then
+        mainFrame.Visible = not mainFrame.Visible
+    end
+end)
+
+
+-- Add GUI to PlayerGui
+screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+print("Modern UI Loaded.")
