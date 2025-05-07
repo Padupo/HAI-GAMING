@@ -1,177 +1,65 @@
--- ... (Toàn bộ code UI hiện tại của bạn đến trước dòng "Add GUI to PlayerGui") ...
-
--- [[ THÊM PHẦN HIỂN THỊ STATS "NGUY HIỂM" ]]
-local statsDisplayFrame = Instance.new("Frame")
-statsDisplayFrame.Name = "StatsDisplayFrame"
-statsDisplayFrame.Size = UDim2.new(0, 230, 0, 250) -- Kích thước có thể điều chỉnh
-statsDisplayFrame.Position = UDim2.new(1, -240, 0, 10) -- Góc trên bên phải (padding 10px)
-statsDisplayFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28) -- Nền rất tối
-statsDisplayFrame.BorderColor3 = Color3.fromRGB(70, 70, 80)   -- Viền xám đậm
-statsDisplayFrame.BorderSizePixel = 1
-statsDisplayFrame.Active = true -- Cho phép tương tác nếu cần (ví dụ: kéo thả sau này)
-statsDisplayFrame.Draggable = false -- Tạm thời không cho kéo
-statsDisplayFrame.ClipsDescendants = true
-statsDisplayFrame.Parent = screenGui -- Thêm vào screenGui để luôn hiển thị
-
-local statsTitleLabel = Instance.new("TextLabel")
-statsTitleLabel.Name = "StatsTitle"
-statsTitleLabel.Size = UDim2.new(1, 0, 0, 25)
-statsTitleLabel.BackgroundColor3 = Color3.fromRGB(30, 33, 40) -- Nền tiêu đề hơi sáng hơn
-statsTitleLabel.TextColor3 = Color3.fromRGB(0, 255, 127) -- Màu xanh lá cây "hacker"
-statsTitleLabel.Text = "CLIENT STATUS"
-statsTitleLabel.Font = Enum.Font.Code -- Font monospace
-statsTitleLabel.TextSize = 16
-statsTitleLabel.TextXAlignment = Enum.TextXAlignment.Center
-statsTitleLabel.Parent = statsDisplayFrame
-
-local statsPadding = Instance.new("UIPadding")
-statsPadding.PaddingLeft = UDim.new(0, 8)
-statsPadding.PaddingRight = UDim.new(0, 8)
-statsPadding.PaddingTop = UDim.new(0, 5)
-statsPadding.PaddingBottom = UDim.new(0, 8)
-statsPadding.Parent = statsDisplayFrame
-
-local statsListLayout = Instance.new("UIListLayout")
-statsListLayout.Padding = UDim.new(0, 3) -- Khoảng cách giữa các dòng stat
-statsListLayout.FillDirection = Enum.FillDirection.Vertical
-statsListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-statsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- Sắp xếp theo LayoutOrder
-statsListLayout.Parent = statsDisplayFrame
-
-local function createStatTextLabel(labelText, order)
-    local label = Instance.new("TextLabel")
-    label.Name = labelText:gsub("%s+", "") .. "Label" -- Tạo tên không có khoảng trắng
-    label.Size = UDim2.new(1, 0, 0, 16) -- Chiều cao mỗi dòng stat
-    label.BackgroundTransparency = 1
-    label.Text = labelText .. ": ..." -- Văn bản ban đầu
-    label.Font = Enum.Font.Code
-    label.TextSize = 13
-    label.TextColor3 = Color3.fromRGB(200, 205, 210) -- Màu chữ mặc định
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.LayoutOrder = order -- Quan trọng cho UIListLayout
-    label.Parent = statsDisplayFrame
-    return label
-end
-
--- Tạo các label cho từng thông số
-local fpsStatLabel = createStatTextLabel("FPS", 1)
-local pingStatLabel = createStatTextLabel("Ping", 2)
-local usernameStatLabel = createStatTextLabel("Username", 3)
-local userIdStatLabel = createStatTextLabel("User ID", 4)
-local healthStatLabel = createStatTextLabel("Health", 5)
-local walkSpeedStatLabel = createStatTextLabel("WalkSpeed", 6)
-local jumpHeightStatLabel = createStatTextLabel("Jump", 7)
-local positionStatLabel = createStatTextLabel("Position", 8)
-local placeIdStatLabel = createStatTextLabel("Place ID", 9)
-local jobIdStatLabel = createStatTextLabel("Server ID", 10)
-local clientUptimeStatLabel = createStatTextLabel("Uptime", 11)
-
--- Thiết lập thông tin tĩnh một lần
-local LocalPlayer = Players.LocalPlayer
-usernameStatLabel.Text = "Username: " .. LocalPlayer.Name .. " (@" .. LocalPlayer.DisplayName .. ")"
-userIdStatLabel.Text = "User ID: " .. LocalPlayer.UserId
-placeIdStatLabel.Text = "Place ID: " .. game.PlaceId
-jobIdStatLabel.Text = "Server ID: " .. game.JobId
-
-local clientScriptStartTime = tick() -- Thời điểm script bắt đầu chạy
-
--- [[ KẾT THÚC PHẦN HIỂN THỊ STATS ]]
-
--- ... (Code UI chính của bạn (mainFrame, titleBar, contentFrame, các nút chức năng, v.v.)) ...
--- ... (Các hàm toggleFogFeature, toggleFullbrightFeature, updateFeatureButtonStates, v.v.) ...
--- ... (Các kết nối sự kiện cho nút và Lighting) ...
--- ... (Các thông báo ban đầu) ...
-
--- Add GUI to PlayerGui
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
--- Initialize button states on load (cho UI chính)
-updateFeatureButtonStates()
-
--- Welcome Notification
-StarterGui:SetCore("SendNotification", {
-    Title = "Chào mừng!",
-    Text = "Script điều khiển hiệu ứng đã sẵn sàng. Nhấn F1 để mở/đóng UI.",
-    Duration = 5
-})
-
--- [[ THÊM VÒNG LẶP CẬP NHẬT STATS ]]
+-- Services
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local lastCharacter = nil
-local lastHumanoid = nil
+local StarterGui = game:GetService("StarterGui") -- Giữ lại nếu bạn vẫn muốn thông báo chào mừng
 
+-- [[ PHẦN HIỂN THỊ FPS ĐƠN GIẢN ]]
+
+-- ScreenGui để chứa FPS Label
+local fpsScreenGui = Instance.new("ScreenGui")
+fpsScreenGui.Name = "FPScounterUI"
+fpsScreenGui.ResetOnSpawn = false
+fpsScreenGui.DisplayOrder = 10000 -- Đảm bảo nó ở trên cùng
+
+-- TextLabel để hiển thị FPS
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Name = "FPSLabel"
+fpsLabel.Size = UDim2.new(0, 100, 0, 30)         -- Kích thước label
+fpsLabel.Position = UDim2.new(0, 10, 0, 10)      -- Vị trí (góc trên bên trái, padding 10px)
+fpsLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Màu nền tối
+fpsLabel.BackgroundTransparency = 0.3            -- Hơi trong suốt
+fpsLabel.BorderColor3 = Color3.fromRGB(50, 50, 50)
+fpsLabel.BorderSizePixel = 1
+fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Màu chữ xanh lá
+fpsLabel.Font = Enum.Font.SourceSansBold        -- Font chữ
+fpsLabel.TextSize = 16
+fpsLabel.Text = "FPS: ..."
+fpsLabel.TextXAlignment = Enum.TextXAlignment.Center
+fpsLabel.Parent = fpsScreenGui
+
+-- Thêm bo góc cho đẹp hơn (tùy chọn)
+local fpsCorner = Instance.new("UICorner")
+fpsCorner.CornerRadius = UDim.new(0, 5)
+fpsCorner.Parent = fpsLabel
+
+-- Thêm ScreenGui vào PlayerGui
+fpsScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Vòng lặp cập nhật FPS
 RunService.RenderStepped:Connect(function(deltaTime)
-    -- FPS
     local currentFps = workspace:GetRealPhysicsFPS()
-    fpsStatLabel.Text = "FPS: " .. string.format("%.0f", currentFps)
+    fpsLabel.Text = string.format("FPS: %.0f", currentFps)
+
+    -- Thay đổi màu sắc dựa trên FPS (tùy chọn)
     if currentFps < 30 then
-        fpsStatLabel.TextColor3 = Color3.fromRGB(255, 80, 80) -- Đỏ
+        fpsLabel.TextColor3 = Color3.fromRGB(255, 80, 80) -- Đỏ
     elseif currentFps < 55 then
-        fpsStatLabel.TextColor3 = Color3.fromRGB(255, 220, 80) -- Vàng
+        fpsLabel.TextColor3 = Color3.fromRGB(255, 220, 80) -- Vàng
     else
-        fpsStatLabel.TextColor3 = Color3.fromRGB(80, 255, 80) -- Xanh lá
+        fpsLabel.TextColor3 = Color3.fromRGB(80, 255, 80) -- Xanh lá (mặc định khi tốt)
     end
-
-    -- Ping
-    local currentPing = LocalPlayer:GetNetworkPing() * 1000 -- Chuyển sang ms
-    pingStatLabel.Text = "Ping: " .. string.format("%.0f ms", currentPing)
-     if currentPing > 200 then
-        pingStatLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-    elseif currentPing > 100 then
-        pingStatLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
-    else
-        pingStatLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
-    end
-
-    -- Thông tin nhân vật (chỉ cập nhật nếu có thay đổi hoặc humanoid tồn tại)
-    local character = LocalPlayer.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            if humanoid ~= lastHumanoid or humanoid.Health ~= humanoid.MaxHealth then -- Tối ưu hóa
-                healthStatLabel.Text = string.format("Health: %.0f / %.0f", humanoid.Health, humanoid.MaxHealth)
-                if humanoid.Health < humanoid.MaxHealth * 0.3 then
-                    healthStatLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-                elseif humanoid.Health < humanoid.MaxHealth * 0.7 then
-                    healthStatLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
-                else
-                    healthStatLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
-                end
-            end
-
-            walkSpeedStatLabel.Text = "WalkSpeed: " .. string.format("%.1f", humanoid.WalkSpeed)
-            jumpHeightStatLabel.Text = "Jump: " .. string.format("%.1f", humanoid.JumpHeight) -- Hoặc humanoid.JumpPower
-
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local pos = hrp.Position
-                positionStatLabel.Text = string.format("Position: X:%.1f Y:%.1f Z:%.1f", pos.X, pos.Y, pos.Z)
-            else
-                positionStatLabel.Text = "Position: N/A (No HRP)"
-            end
-            lastHumanoid = humanoid
-        else
-            healthStatLabel.Text = "Health: N/A (No Humanoid)"
-            walkSpeedStatLabel.Text = "WalkSpeed: N/A"
-            jumpHeightStatLabel.Text = "Jump: N/A"
-            positionStatLabel.Text = "Position: N/A"
-            lastHumanoid = nil
-        end
-    else
-        healthStatLabel.Text = "Health: N/A (No Character)"
-        walkSpeedStatLabel.Text = "WalkSpeed: N/A"
-        jumpHeightStatLabel.Text = "Jump: N/A"
-        positionStatLabel.Text = "Position: N/A"
-        lastHumanoid = nil
-    end
-
-    -- Client Uptime
-    local uptimeSeconds = tick() - clientScriptStartTime
-    local hours = math.floor(uptimeSeconds / 3600)
-    local minutes = math.floor((uptimeSeconds % 3600) / 60)
-    local seconds = math.floor(uptimeSeconds % 60)
-    clientUptimeStatLabel.Text = string.format("Uptime: %02d:%02d:%02d", hours, minutes, seconds)
 end)
--- [[ KẾT THÚC VÒNG LẶP CẬP NHẬT STATS ]]
 
-print("Modern Effects UI with Features and Stats Loaded.")
+-- Thông báo chào mừng (nếu bạn vẫn muốn giữ lại từ các phiên bản trước)
+StarterGui:SetCore(
+    "SendNotification",
+    {
+        Title = "Chào mừng!",
+        Text = "FPS Counter đã được tải.",
+        Duration = 3
+    }
+)
+
+print("Simple FPS Counter Loaded.")
+
+-- [[ KẾT THÚC PHẦN HIỂN THỊ FPS ĐƠN GIẢN ]]
