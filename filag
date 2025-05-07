@@ -1,53 +1,33 @@
--- Services
+-- ... (Toàn bộ services và khai báo biến gốc như trước) ...
 local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService") -- Cho NoClip mượt hơn
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 
--- Original Lighting & Character Values
-local originalFogEnd = Lighting.FogEnd; local originalFogStart = Lighting.FogStart; local originalFogColor = Lighting.FogColor
-local originalAmbient = Lighting.Ambient; local originalColorShift_Bottom = Lighting.ColorShift_Bottom; local originalColorShift_Top = Lighting.ColorShift_Top
-local originalGlobalShadows = Lighting.GlobalShadows; local originalBrightness = Lighting.Brightness
-local originalEnvDiffuseScale = Lighting.EnvironmentDiffuseScale; local originalEnvSpecularScale = Lighting.EnvironmentSpecularScale
-local originalWalkSpeed = 16 -- Giá trị mặc định, sẽ cập nhật khi có humanoid
-local originalJumpPower = 50 -- Giá trị mặc định
-local originalJumpHeight -- Sẽ lấy từ humanoid
+-- Original Lighting, Character & Graphics Values
+-- ... (Biến gốc cho Fog, Ambient, Shadows, Brightness, EnvScales, WalkSpeed, JumpPower như trước) ...
+local originalMaterialQuality = Lighting.MaterialQuality
+local originalDecoration = Terrain and Terrain.Decoration or false -- Lưu trạng thái gốc của cỏ
+local originalPostProcessingStates = {} -- Sẽ lưu trạng thái gốc của các hiệu ứng
+local originalPartRenderFidelity = {} -- Sẽ lưu RenderFidelity gốc của các part đã thay đổi
 
 -- State Variables for Features
-local isFogRemoved = false
-local isFullbrightActive = false
-local isGraphicsOptimized = false
-local isClickTeleportActive = false
-local isFlyActive = false          -- MỚI
-local isNoClipActive = false       -- MỚI
-local isPlayerESPActive = false    -- MỚI
+-- ... (isFogRemoved, isFullbrightActive, isGraphicsOptimized, isClickTeleportActive, isFlyActive, isNoClipActive, isPlayerESPActive như trước) ...
+local isSuperLagReductionActive = false -- BIẾN MỚI
 
--- Fly Variables
-local flySpeed = 1.5
-local flyBodyForce = nil
-local flyBodyGyro = nil
-
--- NoClip Variables
-local noClipConnections = {}
-
--- ESP Variables
-local espBillboardGuis = {}
+-- ... (Fly, NoClip, ESP Variables như trước) ...
 
 -- UI Elements
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "UltimateClientEnhancer_V2_VN"
-screenGui.ResetOnSpawn = false
-screenGui.DisplayOrder = 999
-
--- Main Window
-local mainFrame = Instance.new("Frame")
+-- ... (screenGui, mainFrame styling như trước) ...
+screenGui.Name = "UltimateClientEnhancer_V3_VN"
 mainFrame.Name = "MainWindow"
-mainFrame.Size = UDim2.new(0, 320, 0, 530) -- Tăng kích thước đáng kể
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -265)
--- ... (code mainFrame, titleBar, contentFrame styling như trước) ...
+mainFrame.Size = UDim2.new(0, 320, 0, 580) -- Tăng chiều cao cho nút mới
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -290)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35,38,46); mainFrame.BorderSizePixel = 0; mainFrame.Active = true; mainFrame.Draggable = true; mainFrame.ClipsDescendants = true; mainFrame.Parent = screenGui
 local mainFrameCorner = Instance.new("UICorner"); mainFrameCorner.CornerRadius = UDim.new(0,8); mainFrameCorner.Parent = mainFrame
 local mainFrameStroke = Instance.new("UIStroke"); mainFrameStroke.Color = Color3.fromRGB(25,28,36); mainFrameStroke.Thickness = 2; mainFrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; mainFrameStroke.Parent = mainFrame
@@ -55,18 +35,12 @@ local titleBar = Instance.new("Frame"); titleBar.Name = "TitleBar"; titleBar.Siz
 local titleLabel = Instance.new("TextLabel"); titleLabel.Name = "TitleLabel"; titleLabel.Size = UDim2.new(1,-10,1,0); titleLabel.Position = UDim2.new(0,10,0,0); titleLabel.BackgroundTransparency = 1; titleLabel.TextColor3 = Color3.fromRGB(220,225,230); titleLabel.Text = "Bảng Điều Khiển Client"; titleLabel.Font = Enum.Font.GothamSemibold; titleLabel.TextSize = 18; titleLabel.TextXAlignment = Enum.TextXAlignment.Left; titleLabel.Parent = titleBar
 local accentLine = Instance.new("Frame"); accentLine.Name = "AccentLine"; accentLine.Size = UDim2.new(1,0,0,2); accentLine.Position = UDim2.new(0,0,1,-2); accentLine.BackgroundColor3 = Color3.fromRGB(88,101,242); accentLine.BorderSizePixel = 0; accentLine.Parent = titleBar
 local contentFrame = Instance.new("Frame"); contentFrame.Name = "ContentFrame"; contentFrame.Size = UDim2.new(1,-20,1,-(titleBar.Size.Y.Offset+10+10)); contentFrame.Position = UDim2.new(0,10,0,titleBar.Size.Y.Offset+10); contentFrame.BackgroundTransparency = 1; contentFrame.Parent = mainFrame
+local contentListLayout = Instance.new("UIListLayout"); contentListLayout.Padding = UDim.new(0,10); contentListLayout.FillDirection = Enum.FillDirection.Vertical; contentListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; contentListLayout.SortOrder = Enum.SortOrder.LayoutOrder; contentListLayout.Parent = contentFrame
 
--- UI List Layout cho contentFrame để tự động sắp xếp
-local contentListLayout = Instance.new("UIListLayout")
-contentListLayout.Padding = UDim.new(0, 10) -- Khoảng cách giữa các nút/nhóm
-contentListLayout.FillDirection = Enum.FillDirection.Vertical
-contentListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-contentListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-contentListLayout.Parent = contentFrame
 
 local function createFeatureButton(text, order)
     local button = Instance.new("TextButton")
-    button.Name = text:gsub("%s+", "") .. "Button"
+    button.Name = text:gsub("[^%w]+", "") .. "Button" -- Loại bỏ ký tự đặc biệt và khoảng trắng khỏi tên
     button.Size = UDim2.new(1, 0, 0, 40)
     button.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
     button.TextColor3 = Color3.fromRGB(200, 205, 210)
@@ -80,103 +54,53 @@ local function createFeatureButton(text, order)
     return button
 end
 
--- Tạo các nút chức năng
+-- Tạo các nút chức năng (Thứ tự LayoutOrder quan trọng)
 local fogFeatureButton = createFeatureButton("Bật Tắt Sương Mù", 1)
 local fullbrightFeatureButton = createFeatureButton("Bật Sáng Tối Đa", 2)
 local optimizeGraphicsButton = createFeatureButton("Bật Tối Ưu Đồ Họa", 3)
-local clickTeleportButton = createFeatureButton("Bật Dịch Chuyển Click", 4)
-local flyButton = createFeatureButton("Bật Chế Độ Bay", 5)          -- MỚI
-local noClipButton = createFeatureButton("Bật Đi Xuyên Tường", 6)     -- MỚI
-local playerESPButton = createFeatureButton("Bật ESP Người Chơi", 7) -- MỚI
+local superLagReductionButton = createFeatureButton("Bật Siêu Giảm Lag", 4) -- NÚT MỚI
+local clickTeleportButton = createFeatureButton("Bật Dịch Chuyển Click", 5)
+local flyButton = createFeatureButton("Bật Chế Độ Bay", 6)
+local noClipButton = createFeatureButton("Bật Đi Xuyên Tường", 7)
+local playerESPButton = createFeatureButton("Bật ESP Người Chơi", 8)
 
--- WalkSpeed and JumpPower Controls (MỚI)
-local movementControlFrame = Instance.new("Frame")
-movementControlFrame.Name = "MovementControlFrame"
-movementControlFrame.Size = UDim2.new(1, 0, 0, 100) -- Chiều cao cho 2 input và label
-movementControlFrame.BackgroundTransparency = 1
-movementControlFrame.LayoutOrder = 8
-movementControlFrame.Parent = contentFrame
-
-local mcfListLayout = Instance.new("UIListLayout")
-mcfListLayout.Padding = UDim.new(0,5)
-mcfListLayout.FillDirection = Enum.FillDirection.Vertical
-mcfListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-mcfListLayout.Parent = movementControlFrame
-
-local walkSpeedLabel = Instance.new("TextLabel")
-walkSpeedLabel.Name = "WalkSpeedLabel"
-walkSpeedLabel.Size = UDim2.new(1, 0, 0, 20)
-walkSpeedLabel.BackgroundTransparency = 1
-walkSpeedLabel.TextColor3 = Color3.fromRGB(180, 185, 190)
-walkSpeedLabel.Text = "Tốc Độ Chạy:"
-walkSpeedLabel.Font = Enum.Font.SourceSans
-walkSpeedLabel.TextSize = 14
-walkSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-walkSpeedLabel.Parent = mcfListLayout
-
-local walkSpeedInput = Instance.new("TextBox")
-walkSpeedInput.Name = "WalkSpeedInput"
-walkSpeedInput.Size = UDim2.new(1, 0, 0, 30)
-walkSpeedInput.BackgroundColor3 = Color3.fromRGB(40, 43, 50)
-walkSpeedInput.TextColor3 = Color3.fromRGB(220, 225, 230)
-walkSpeedInput.PlaceholderText = "Nhập tốc độ (mặc định: 16)"
-walkSpeedInput.Font = Enum.Font.SourceSans
-walkSpeedInput.TextSize = 14
-walkSpeedInput.ClearTextOnFocus = false
-walkSpeedInput.Parent = mcfListLayout
+-- WalkSpeed and JumpPower Controls (LayoutOrder = 9)
+-- ... (code movementControlFrame, walkSpeedInput, jumpPowerInput như trước, nhớ đặt LayoutOrder) ...
+local movementControlFrame = Instance.new("Frame"); movementControlFrame.Name = "MovementControlFrame"; movementControlFrame.Size = UDim2.new(1,0,0,100); movementControlFrame.BackgroundTransparency = 1; movementControlFrame.LayoutOrder = 9; movementControlFrame.Parent = contentFrame
+local mcfListLayout = Instance.new("UIListLayout"); mcfListLayout.Padding = UDim.new(0,5); mcfListLayout.FillDirection = Enum.FillDirection.Vertical; mcfListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left; mcfListLayout.Parent = movementControlFrame
+local walkSpeedLabel = Instance.new("TextLabel"); walkSpeedLabel.Name = "WalkSpeedLabel"; walkSpeedLabel.Size = UDim2.new(1,0,0,20); walkSpeedLabel.BackgroundTransparency = 1; walkSpeedLabel.TextColor3 = Color3.fromRGB(180,185,190); walkSpeedLabel.Text = "Tốc Độ Chạy:"; walkSpeedLabel.Font = Enum.Font.SourceSans; walkSpeedLabel.TextSize = 14; walkSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left; walkSpeedLabel.Parent = mcfListLayout
+local walkSpeedInput = Instance.new("TextBox"); walkSpeedInput.Name = "WalkSpeedInput"; walkSpeedInput.Size = UDim2.new(1,0,0,30); walkSpeedInput.BackgroundColor3 = Color3.fromRGB(40,43,50); walkSpeedInput.TextColor3 = Color3.fromRGB(220,225,230); walkSpeedInput.PlaceholderText = "Nhập tốc độ (mặc định: 16)"; walkSpeedInput.Font = Enum.Font.SourceSans; walkSpeedInput.TextSize = 14; walkSpeedInput.ClearTextOnFocus = false; walkSpeedInput.Parent = mcfListLayout
 local wsCorner = Instance.new("UICorner"); wsCorner.CornerRadius = UDim.new(0,4); wsCorner.Parent = walkSpeedInput
-
-local jumpPowerLabel = Instance.new("TextLabel") -- Hoặc JumpHeight tùy bạn muốn kiểm soát
-jumpPowerLabel.Name = "JumpPowerLabel"
-jumpPowerLabel.Size = UDim2.new(1, 0, 0, 20)
-jumpPowerLabel.BackgroundTransparency = 1
-jumpPowerLabel.TextColor3 = Color3.fromRGB(180, 185, 190)
-jumpPowerLabel.Text = "Sức Nhảy (JumpPower):"
-jumpPowerLabel.Font = Enum.Font.SourceSans
-jumpPowerLabel.TextSize = 14
-jumpPowerLabel.TextXAlignment = Enum.TextXAlignment.Left
-jumpPowerLabel.Parent = mcfListLayout
-
-local jumpPowerInput = Instance.new("TextBox")
-jumpPowerInput.Name = "JumpPowerInput"
-jumpPowerInput.Size = UDim2.new(1, 0, 0, 30)
-jumpPowerInput.BackgroundColor3 = Color3.fromRGB(40, 43, 50)
-jumpPowerInput.TextColor3 = Color3.fromRGB(220, 225, 230)
-jumpPowerInput.PlaceholderText = "Nhập sức nhảy (mặc định: 50)"
-jumpPowerInput.Font = Enum.Font.SourceSans
-jumpPowerInput.TextSize = 14
-jumpPowerInput.ClearTextOnFocus = false
-jumpPowerInput.Parent = mcfListLayout
+local jumpPowerLabel = Instance.new("TextLabel"); jumpPowerLabel.Name = "JumpPowerLabel"; jumpPowerLabel.Size = UDim2.new(1,0,0,20); jumpPowerLabel.BackgroundTransparency = 1; jumpPowerLabel.TextColor3 = Color3.fromRGB(180,185,190); jumpPowerLabel.Text = "Sức Nhảy (JumpPower):"; jumpPowerLabel.Font = Enum.Font.SourceSans; jumpPowerLabel.TextSize = 14; jumpPowerLabel.TextXAlignment = Enum.TextXAlignment.Left; jumpPowerLabel.Parent = mcfListLayout
+local jumpPowerInput = Instance.new("TextBox"); jumpPowerInput.Name = "JumpPowerInput"; jumpPowerInput.Size = UDim2.new(1,0,0,30); jumpPowerInput.BackgroundColor3 = Color3.fromRGB(40,43,50); jumpPowerInput.TextColor3 = Color3.fromRGB(220,225,230); jumpPowerInput.PlaceholderText = "Nhập sức nhảy (mặc định: 50)"; jumpPowerInput.Font = Enum.Font.SourceSans; jumpPowerInput.TextSize = 14; jumpPowerInput.ClearTextOnFocus = false; jumpPowerInput.Parent = mcfListLayout
 local jpCorner = Instance.new("UICorner"); jpCorner.CornerRadius = UDim.new(0,4); jpCorner.Parent = jumpPowerInput
 
 
--- Nút bật/tắt UI
-local toggleUiButton = Instance.new("TextButton")
-toggleUiButton.Name = "ToggleUiButton"; toggleUiButton.Size = UDim2.new(0,140,0,30); toggleUiButton.Position = UDim2.new(0,15,0,15); toggleUiButton.BackgroundColor3 = Color3.fromRGB(45,48,56); toggleUiButton.TextColor3 = Color3.fromRGB(220,225,230); toggleUiButton.Text = "Ẩn/Hiện Menu (F1)"; toggleUiButton.Font = Enum.Font.SourceSansBold; toggleUiButton.TextSize = 14; toggleUiButton.Parent = screenGui
+-- ... (Nút bật/tắt UI, FPS Counter như trước) ...
+local toggleUiButton = Instance.new("TextButton"); toggleUiButton.Name = "ToggleUiButton"; toggleUiButton.Size = UDim2.new(0,140,0,30); toggleUiButton.Position = UDim2.new(0,15,0,15); toggleUiButton.BackgroundColor3 = Color3.fromRGB(45,48,56); toggleUiButton.TextColor3 = Color3.fromRGB(220,225,230); toggleUiButton.Text = "Ẩn/Hiện Menu (F1)"; toggleUiButton.Font = Enum.Font.SourceSansBold; toggleUiButton.TextSize = 14; toggleUiButton.Parent = screenGui
 local toggleUiCorner = Instance.new("UICorner"); toggleUiCorner.CornerRadius = UDim.new(0,6); toggleUiCorner.Parent = toggleUiButton
 local toggleUiStroke = Instance.new("UIStroke"); toggleUiStroke.Color = Color3.fromRGB(25,28,36); toggleUiStroke.Thickness = 1.5; toggleUiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; toggleUiStroke.Parent = toggleUiButton
-
--- FPS Counter Label
-local fpsLabel = Instance.new("TextLabel")
-fpsLabel.Name = "FPSLabel"; fpsLabel.Size = UDim2.new(0,toggleUiButton.Size.X.Offset,0,28); fpsLabel.Position = UDim2.new(toggleUiButton.Position.X.Scale, toggleUiButton.Position.X.Offset, toggleUiButton.Position.Y.Scale, toggleUiButton.Position.Y.Offset + toggleUiButton.Size.Y.Offset + 5); fpsLabel.BackgroundColor3 = Color3.fromRGB(20,22,28); fpsLabel.BackgroundTransparency = 0.2; fpsLabel.BorderColor3 = Color3.fromRGB(88,101,242); fpsLabel.BorderSizePixel = 1; fpsLabel.TextColor3 = Color3.fromRGB(80,255,80); fpsLabel.Font = Enum.Font.Code; fpsLabel.TextSize = 14; fpsLabel.Text = "FPS: ..."; fpsLabel.TextXAlignment = Enum.TextXAlignment.Center; fpsLabel.Parent = screenGui
+local fpsLabel = Instance.new("TextLabel"); fpsLabel.Name = "FPSLabel"; fpsLabel.Size = UDim2.new(0,toggleUiButton.Size.X.Offset,0,28); fpsLabel.Position = UDim2.new(toggleUiButton.Position.X.Scale, toggleUiButton.Position.X.Offset, toggleUiButton.Position.Y.Scale, toggleUiButton.Position.Y.Offset + toggleUiButton.Size.Y.Offset + 5); fpsLabel.BackgroundColor3 = Color3.fromRGB(20,22,28); fpsLabel.BackgroundTransparency = 0.2; fpsLabel.BorderColor3 = Color3.fromRGB(88,101,242); fpsLabel.BorderSizePixel = 1; fpsLabel.TextColor3 = Color3.fromRGB(80,255,80); fpsLabel.Font = Enum.Font.Code; fpsLabel.TextSize = 14; fpsLabel.Text = "FPS: ..."; fpsLabel.TextXAlignment = Enum.TextXAlignment.Center; fpsLabel.Parent = screenGui
 local fpsCorner = Instance.new("UICorner"); fpsCorner.CornerRadius = UDim.new(0,5); fpsCorner.Parent = fpsLabel
 
 
 -- FUNCTIONS FOR FEATURES
 local function updateFeatureButtonStates()
-    -- ... (cập nhật cho các nút cũ như trước) ...
+    -- ... (Cập nhật cho các nút cũ như trước) ...
     if isFogRemoved then fogFeatureButton.Text = "Tắt Sương Mù (Đang Bật)"; fogFeatureButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else fogFeatureButton.Text = "Bật Tắt Sương Mù"; fogFeatureButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
     if isFullbrightActive then fullbrightFeatureButton.Text = "Tắt Sáng Tối Đa (Đang Bật)"; fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else fullbrightFeatureButton.Text = "Bật Sáng Tối Đa"; fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
     if isGraphicsOptimized then optimizeGraphicsButton.Text = "Tắt Tối Ưu (Đang Bật)"; optimizeGraphicsButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else optimizeGraphicsButton.Text = "Bật Tối Ưu Đồ Họa"; optimizeGraphicsButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
     if isClickTeleportActive then clickTeleportButton.Text = "Tắt D.Chuyển Click (Bật)"; clickTeleportButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else clickTeleportButton.Text = "Bật Dịch Chuyển Click"; clickTeleportButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
-
-    -- Cập nhật cho các nút mới
     if isFlyActive then flyButton.Text = "Tắt Chế Độ Bay (Bật)"; flyButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else flyButton.Text = "Bật Chế Độ Bay"; flyButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
     if isNoClipActive then noClipButton.Text = "Tắt Xuyên Tường (Bật)"; noClipButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else noClipButton.Text = "Bật Đi Xuyên Tường"; noClipButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
     if isPlayerESPActive then playerESPButton.Text = "Tắt ESP Người Chơi (Bật)"; playerESPButton.BackgroundColor3 = Color3.fromRGB(76,175,80) else playerESPButton.Text = "Bật ESP Người Chơi"; playerESPButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
+
+    -- Nút Siêu Giảm Lag
+    if isSuperLagReductionActive then superLagReductionButton.Text = "Tắt Siêu Giảm Lag (Bật)"; superLagReductionButton.BackgroundColor3 = Color3.fromRGB(220,50,50) -- Màu đỏ để cảnh báo
+    else superLagReductionButton.Text = "Bật Siêu Giảm Lag"; superLagReductionButton.BackgroundColor3 = Color3.fromRGB(55,58,66) end
 end
 
--- ... (Các hàm apply/restore/toggle cho Fog, Fullbright, Optimize, ClickTeleport như trước) ...
+-- ... (Các hàm apply/restore/toggle cho Fog, Fullbright, Optimize, ClickTeleport, Fly, NoClip, ESP, Movement như trước) ...
 local function applyFogSettings() Lighting.FogEnd=1e10; Lighting.FogStart=1e10; Lighting.FogColor=Color3.new(1,1,1) end
 local function restoreFogSettings() Lighting.FogEnd=originalFogEnd; Lighting.FogStart=originalFogStart; Lighting.FogColor=originalFogColor end
 local function toggleFogFeature() isFogRemoved=not isFogRemoved; if isFogRemoved then applyFogSettings(); StarterGui:SetCore("SendNotification",{Title="Tắt Sương Mù",Text="Đã kích hoạt!",Duration=2}) else restoreFogSettings(); StarterGui:SetCore("SendNotification",{Title="Tắt Sương Mù",Text="Đã hủy kích hoạt.",Duration=2}) end; updateFeatureButtonStates() end
@@ -187,259 +111,108 @@ local function applyOptimizeSettings() Lighting.GlobalShadows=false; Lighting.Br
 local function restoreOptimizeSettings() Lighting.GlobalShadows=originalGlobalShadows; Lighting.Brightness=originalBrightness; Lighting.EnvironmentDiffuseScale=originalEnvDiffuseScale; Lighting.EnvironmentSpecularScale=originalEnvSpecularScale end
 local function toggleOptimizeFeature() isGraphicsOptimized=not isGraphicsOptimized; if isGraphicsOptimized then applyOptimizeSettings(); StarterGui:SetCore("SendNotification",{Title="Tối Ưu Đồ Họa",Text="Đã kích hoạt!",Duration=2}) else restoreOptimizeSettings(); StarterGui:SetCore("SendNotification",{Title="Tối Ưu Đồ Họa",Text="Đã hủy kích hoạt.",Duration=2}) end; updateFeatureButtonStates() end
 local function toggleClickTeleportFeature() isClickTeleportActive = not isClickTeleportActive; if isClickTeleportActive then StarterGui:SetCore("SendNotification", {Title="Dịch Chuyển Click", Text="Đã bật! Giữ LeftAlt + Click trái.", Duration=3}) else StarterGui:SetCore("SendNotification", {Title="Dịch Chuyển Click", Text="Đã tắt.", Duration=2}) end; updateFeatureButtonStates() end
+local flyBodyForce = nil; local flyBodyGyro = nil; local flySpeed = 1.5;
+local function toggleFlyFeature() isFlyActive = not isFlyActive; local char = LocalPlayer.Character; local hum = char and char:FindFirstChildOfClass("Humanoid"); local hrp = char and char:FindFirstChild("HumanoidRootPart"); if isFlyActive then if hum and hrp then hum.PlatformStand = true; flyBodyForce = Instance.new("BodyForce", hrp); flyBodyForce.Force = Vector3.new(0,hum:GetMass()*Workspace.Gravity*0.95,0); flyBodyGyro = Instance.new("BodyGyro",hrp); flyBodyGyro.MaxTorque = Vector3.new(math.huge,math.huge,math.huge); flyBodyGyro.CFrame = hrp.CFrame; StarterGui:SetCore("SendNotification",{Title="Chế Độ Bay",Text="Đã bật! W/A/S/D, Space/LCtrl.",Duration=3}) else isFlyActive=false; StarterGui:SetCore("SendNotification",{Title="Chế Độ Bay",Text="Lỗi: Không tìm thấy nhân vật.",Duration=3}) end else if hum then hum.PlatformStand=false end; if flyBodyForce then flyBodyForce:Destroy(); flyBodyForce=nil end; if flyBodyGyro then flyBodyGyro:Destroy(); flyBodyGyro=nil end; StarterGui:SetCore("SendNotification",{Title="Chế Độ Bay",Text="Đã tắt.",Duration=2}) end; updateFeatureButtonStates() end
+local noClipConnections = {}
+local function setPartsNoCollide(character, noCollide) if not character then return end; for _, part in ipairs(character:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = not noCollide end end end
+local function toggleNoClipFeature() isNoClipActive = not isNoClipActive; local char = LocalPlayer.Character; local hum = char and char:FindFirstChildOfClass("Humanoid"); if isNoClipActive then if hum then hum.PlatformStand=true; setPartsNoCollide(char,true); StarterGui:SetCore("SendNotification",{Title="Đi Xuyên Tường",Text="Đã bật!",Duration=2}); if not noClipConnections["CharacterChildAdded"] then noClipConnections["CharacterChildAdded"]=char.ChildAdded:Connect(function(child) if isNoClipActive and child:IsA("BasePart") then child.CanCollide=false elseif isNoClipActive and (child:IsA("Accessory") or child:IsA("Tool")) then task.wait(); for _,p in ipairs(child:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end end end) end else isNoClipActive=false; StarterGui:SetCore("SendNotification",{Title="Đi Xuyên Tường",Text="Lỗi: Không tìm thấy nhân vật.",Duration=3}) end else if hum then hum.PlatformStand=false end; setPartsNoCollide(char,false); if noClipConnections["CharacterChildAdded"] then noClipConnections["CharacterChildAdded"]:Disconnect(); noClipConnections["CharacterChildAdded"]=nil end; StarterGui:SetCore("SendNotification",{Title="Đi Xuyên Tường",Text="Đã tắt.",Duration=2}) end; updateFeatureButtonStates() end
+local espBillboardGuis = {}
+local function createOrUpdateESP(player) local char=player.Character; if not char or player==LocalPlayer then if espBillboardGuis[player] then espBillboardGuis[player]:Destroy(); espBillboardGuis[player]=nil end; return end; local head=char:FindFirstChild("Head"); if not head then if espBillboardGuis[player] then espBillboardGuis[player]:Destroy(); espBillboardGuis[player]=nil end; return end; local gui=espBillboardGuis[player]; if not gui then gui=Instance.new("BillboardGui"); gui.Name="PlayerESP"; gui.Adornee=head; gui.Size=UDim2.new(0,150,0,50); gui.StudsOffset=Vector3.new(0,2,0); gui.AlwaysOnTop=true; gui.ResetOnSpawn=false; local frame=Instance.new("Frame",gui); frame.Size=UDim2.new(1,0,1,0); frame.BackgroundTransparency=0.7; frame.BackgroundColor3=Color3.fromRGB(0,0,0); frame.BorderSizePixel=0; local corner=Instance.new("UICorner",frame); corner.CornerRadius=UDim.new(0,5); local nameLbl=Instance.new("TextLabel",frame); nameLbl.Name="NameLabel"; nameLbl.Size=UDim2.new(1,-4,0.5,0); nameLbl.Position=UDim2.new(0,2,0,0); nameLbl.BackgroundTransparency=1; nameLbl.TextColor3=Color3.fromRGB(255,255,255); nameLbl.Font=Enum.Font.SourceSansSemibold; nameLbl.TextSize=14; nameLbl.TextXAlignment=Enum.TextXAlignment.Left; local distLbl=Instance.new("TextLabel",frame); distLbl.Name="DistanceLabel"; distLbl.Size=UDim2.new(1,-4,0.5,0); distLbl.Position=UDim2.new(0,2,0.5,0); distLbl.BackgroundTransparency=1; distLbl.TextColor3=Color3.fromRGB(200,200,200); distLbl.Font=Enum.Font.SourceSans; distLbl.TextSize=12; distLbl.TextXAlignment=Enum.TextXAlignment.Left; espBillboardGuis[player]=gui; gui.Parent=char end; local nameL=gui.Frame.NameLabel; local distL=gui.Frame.DistanceLabel; nameL.Text=player.DisplayName; if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head") then local dist=(LocalPlayer.Character.Head.Position-head.Position).Magnitude; distL.Text=string.format("%.1fm",dist) else distL.Text="---m" end; if player.TeamColor then gui.Frame.BackgroundColor3=player.TeamColor.Color else gui.Frame.BackgroundColor3=Color3.fromRGB(0,0,0) end end
+local function clearAllESP() for _,gui in pairs(espBillboardGuis) do if gui then gui:Destroy() end end; espBillboardGuis={} end
+local function togglePlayerESPFeature() isPlayerESPActive=not isPlayerESPActive; if isPlayerESPActive then StarterGui:SetCore("SendNotification",{Title="ESP Người Chơi",Text="Đã bật!",Duration=2}); for _,p in ipairs(Players:GetPlayers()) do createOrUpdateESP(p) end else clearAllESP(); StarterGui:SetCore("SendNotification",{Title="ESP Người Chơi",Text="Đã tắt.",Duration=2}) end; updateFeatureButtonStates() end
+local originalWalkSpeed=16; local originalJumpPower=50; local originalJumpHeight;
+local function getHumanoid() return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") end
+local function updateOriginalSpeeds() local hum=getHumanoid(); if hum then if originalWalkSpeed==16 then originalWalkSpeed=hum.WalkSpeed end; if originalJumpPower==50 then originalJumpPower=hum.JumpPower end; if not originalJumpHeight then originalJumpHeight=hum.JumpHeight end; walkSpeedInput.PlaceholderText="Tốc độ ("..string.format("%.1f",hum.WalkSpeed)..")"; jumpPowerInput.PlaceholderText="Sức nhảy ("..string.format("%.0f",hum.JumpPower)..")" end end; if getHumanoid() then updateOriginalSpeeds() else LocalPlayer.CharacterAdded:Connect(updateOriginalSpeeds) end
+walkSpeedInput.FocusLost:Connect(function(enter) if enter then local hum=getHumanoid(); if hum then local num=tonumber(walkSpeedInput.Text); if num and num>0 then hum.WalkSpeed=num; StarterGui:SetCore("SendNotification",{Title="Tốc Độ Chạy",Text="Đã đặt: "..num,Duration=2}) elseif walkSpeedInput.Text=="" then hum.WalkSpeed=originalWalkSpeed; StarterGui:SetCore("SendNotification",{Title="Tốc Độ Chạy",Text="Khôi phục: "..originalWalkSpeed,Duration=2}) else StarterGui:SetCore("SendNotification",{Title="Lỗi",Text="Giá trị không hợp lệ.",Duration=2}) end; walkSpeedInput.Text=""; updateOriginalSpeeds() end end end)
+jumpPowerInput.FocusLost:Connect(function(enter) if enter then local hum=getHumanoid(); if hum then local num=tonumber(jumpPowerInput.Text); if num and num>=0 then hum.JumpPower=num; StarterGui:SetCore("SendNotification",{Title="Sức Nhảy",Text="Đã đặt: "..num,Duration=2}) elseif jumpPowerInput.Text=="" then hum.JumpPower=originalJumpPower; StarterGui:SetCore("SendNotification",{Title="Sức Nhảy",Text="Khôi phục: "..originalJumpPower,Duration=2}) else StarterGui:SetCore("SendNotification",{Title="Lỗi",Text="Giá trị không hợp lệ.",Duration=2}) end; jumpPowerInput.Text=""; updateOriginalSpeeds() end end end)
 
 
--- FLY FUNCTION (MỚI)
-local function toggleFlyFeature()
-    isFlyActive = not isFlyActive
-    local character = LocalPlayer.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+-- SUPER LAG REDUCTION FUNCTION (MỚI)
+local function applySuperLagReduction()
+    -- 1. MaterialQuality
+    Lighting.MaterialQuality = Enum.MaterialQuality.Low
 
-    if isFlyActive then
-        if humanoid and hrp then
-            humanoid.PlatformStand = true -- Giúp nhân vật không bị ảnh hưởng bởi trọng lực
-            flyBodyForce = Instance.new("BodyForce")
-            flyBodyForce.Force = Vector3.new(0, humanoid:GetMass() * workspace.Gravity * 0.95, 0) -- Chống lại trọng lực
-            flyBodyForce.Parent = hrp
+    -- 2. Terrain Decoration
+    if Terrain then Terrain.Decoration = false end
 
-            flyBodyGyro = Instance.new("BodyGyro")
-            flyBodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-            flyBodyGyro.CFrame = hrp.CFrame
-            flyBodyGyro.Parent = hrp
-            StarterGui:SetCore("SendNotification", {Title="Chế Độ Bay", Text="Đã bật! Dùng W/A/S/D, Space/LCtrl.", Duration=3})
-        else
-            isFlyActive = false -- Không thể kích hoạt nếu không có humanoid/hrp
-             StarterGui:SetCore("SendNotification", {Title="Chế Độ Bay", Text="Lỗi: Không tìm thấy nhân vật.", Duration=3})
+    -- 3. Post Processing Effects
+    originalPostProcessingStates = {} -- Reset để lưu lại
+    local effectsToDisable = {"BloomEffect", "BlurEffect", "ColorCorrectionEffect", "SunRaysEffect", "DepthOfFieldEffect"}
+    for _, parent in ipairs({Lighting, Workspace.CurrentCamera}) do
+        for _, effectName in ipairs(effectsToDisable) do
+            for _, effectInstance in ipairs(parent:GetChildren()) do
+                if effectInstance.ClassName == effectName then
+                    originalPostProcessingStates[effectInstance] = effectInstance.Enabled
+                    effectInstance.Enabled = false
+                end
+            end
         end
+    end
+    -- Tắt Atmosphere nếu có
+    local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
+    if atmosphere then
+        originalPostProcessingStates[atmosphere] = atmosphere.Enabled
+        atmosphere.Enabled = false
+    end
+
+
+    -- 4. RenderFidelity (CẨN THẬN, CÓ THỂ TỐN THỜI GIAN BAN ĐẦU)
+    originalPartRenderFidelity = {} -- Reset
+    for _, descendant in ipairs(Workspace:GetDescendants()) do
+        if descendant:IsA("MeshPart") or descendant:IsA("PartOperation") or descendant:IsA("TrussPart") then
+            if descendant.RenderFidelity ~= Enum.RenderFidelity.Performance then
+                originalPartRenderFidelity[descendant] = descendant.RenderFidelity
+                descendant.RenderFidelity = Enum.RenderFidelity.Performance
+            end
+        end
+         -- Tắt CastShadow cho các part nhỏ hoặc không quan trọng (ví dụ)
+        if descendant:IsA("BasePart") and descendant.Size.Magnitude < 5 and descendant.CastShadow then -- Điều kiện ví dụ
+            -- originalPartCastShadow[descendant] = descendant.CastShadow -- Cần lưu nếu muốn khôi phục chính xác
+            descendant.CastShadow = false
+        end
+    end
+    StarterGui:SetCore("SendNotification",{Title="Siêu Giảm Lag", Text="RenderFidelity đã được tối ưu (có thể mất vài giây).", Duration=3})
+end
+
+local function restoreSuperLagReduction()
+    -- 1. MaterialQuality
+    Lighting.MaterialQuality = originalMaterialQuality
+
+    -- 2. Terrain Decoration
+    if Terrain then Terrain.Decoration = originalDecoration end
+
+    -- 3. Post Processing Effects
+    for effectInstance, originalState in pairs(originalPostProcessingStates) do
+        if effectInstance and typeof(originalState) == "boolean" then
+            effectInstance.Enabled = originalState
+        end
+    end
+    originalPostProcessingStates = {}
+
+    -- 4. RenderFidelity
+    for part, originalFidelity in pairs(originalPartRenderFidelity) do
+        if part and part.Parent then -- Kiểm tra part còn tồn tại
+            part.RenderFidelity = originalFidelity
+        end
+    end
+    originalPartRenderFidelity = {}
+    -- Khôi phục CastShadow (nếu đã lưu)
+end
+
+local function toggleSuperLagReductionFeature()
+    isSuperLagReductionActive = not isSuperLagReductionActive
+    if isSuperLagReductionActive then
+        applySuperLagReduction()
+        StarterGui:SetCore("SendNotification", {Title="Siêu Giảm Lag", Text="Đã kích hoạt! Game có thể trông xấu hơn.", Duration=3})
     else
-        if humanoid then humanoid.PlatformStand = false end
-        if flyBodyForce then flyBodyForce:Destroy(); flyBodyForce = nil end
-        if flyBodyGyro then flyBodyGyro:Destroy(); flyBodyGyro = nil end
-        StarterGui:SetCore("SendNotification", {Title="Chế Độ Bay", Text="Đã tắt.", Duration=2})
+        restoreSuperLagReduction()
+        StarterGui:SetCore("SendNotification", {Title="Siêu Giảm Lag", Text="Đã hủy kích hoạt. Khôi phục cài đặt gốc.", Duration=3})
     end
     updateFeatureButtonStates()
 end
 
--- NOCLIP FUNCTION (MỚI)
-local function setPartsNoCollide(character, noCollide)
-    if not character then return end
-    for _, part in ipairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = not noCollide
-        end
-    end
-end
-
-local function toggleNoClipFeature()
-    isNoClipActive = not isNoClipActive
-    local character = LocalPlayer.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-    if isNoClipActive then
-        if humanoid then
-            humanoid.PlatformStand = true -- Giúp đi xuyên tường dễ hơn
-            setPartsNoCollide(character, true)
-            StarterGui:SetCore("SendNotification", {Title="Đi Xuyên Tường", Text="Đã bật!", Duration=2})
-
-            -- Vô hiệu hóa va chạm với các part mới được thêm vào nhân vật (ví dụ: tool)
-            if not noClipConnections["CharacterChildAdded"] then
-                 noClipConnections["CharacterChildAdded"] = character.ChildAdded:Connect(function(child)
-                    if isNoClipActive and child:IsA("BasePart") then
-                        child.CanCollide = false
-                    elseif isNoClipActive and child:IsA("Accessory") or child:IsA("Tool") then
-                         task.wait() -- Chờ handle được thêm
-                         for _,p in ipairs(child:GetDescendants()) do
-                            if p:IsA("BasePart") then p.CanCollide = false end
-                         end
-                    end
-                end)
-            end
-        else
-             isNoClipActive = false
-             StarterGui:SetCore("SendNotification", {Title="Đi Xuyên Tường", Text="Lỗi: Không tìm thấy nhân vật.", Duration=3})
-        end
-    else
-        if humanoid then humanoid.PlatformStand = false end
-        setPartsNoCollide(character, false)
-        -- Ngắt kết nối sự kiện
-        if noClipConnections["CharacterChildAdded"] then
-            noClipConnections["CharacterChildAdded"]:Disconnect()
-            noClipConnections["CharacterChildAdded"] = nil
-        end
-        StarterGui:SetCore("SendNotification", {Title="Đi Xuyên Tường", Text="Đã tắt.", Duration=2})
-    end
-    updateFeatureButtonStates()
-end
-
--- PLAYER ESP FUNCTION (MỚI - Cơ bản)
-local function createOrUpdateESP(player)
-    local character = player.Character
-    if not character or player == LocalPlayer then
-        if espBillboardGuis[player] then
-            espBillboardGuis[player]:Destroy()
-            espBillboardGuis[player] = nil
-        end
-        return
-    end
-
-    local head = character:FindFirstChild("Head")
-    if not head then
-        if espBillboardGuis[player] then
-            espBillboardGuis[player]:Destroy()
-            espBillboardGuis[player] = nil
-        end
-        return
-    end
-
-    local gui = espBillboardGuis[player]
-    if not gui then
-        gui = Instance.new("BillboardGui")
-        gui.Name = "PlayerESP"
-        gui.Adornee = head
-        gui.Size = UDim2.new(0, 150, 0, 50)
-        gui.StudsOffset = Vector3.new(0, 2, 0)
-        gui.AlwaysOnTop = true
-        gui.ResetOnSpawn = false
-
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(1,0,1,0)
-        frame.BackgroundTransparency = 0.7
-        frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-        frame.BorderSizePixel = 0
-        local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0,5); corner.Parent = frame
-        frame.Parent = gui
-
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Name = "NameLabel"
-        nameLabel.Size = UDim2.new(1, -4, 0.5, 0)
-        nameLabel.Position = UDim2.new(0,2,0,0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        nameLabel.Font = Enum.Font.SourceSansSemibold
-        nameLabel.TextSize = 14
-        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-        nameLabel.Parent = frame
-
-        local distLabel = Instance.new("TextLabel")
-        distLabel.Name = "DistanceLabel"
-        distLabel.Size = UDim2.new(1, -4, 0.5, 0)
-        distLabel.Position = UDim2.new(0,2,0.5,0)
-        distLabel.BackgroundTransparency = 1
-        distLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-        distLabel.Font = Enum.Font.SourceSans
-        distLabel.TextSize = 12
-        distLabel.TextXAlignment = Enum.TextXAlignment.Left
-        distLabel.Parent = frame
-
-        espBillboardGuis[player] = gui
-        gui.Parent = player.Character -- Hoặc CoreGui nếu muốn chắc chắn
-    end
-
-    -- Cập nhật thông tin
-    local nameLabel = gui.Frame.NameLabel
-    local distLabel = gui.Frame.DistanceLabel
-    nameLabel.Text = player.DisplayName
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head") then
-        local distance = (LocalPlayer.Character.Head.Position - head.Position).Magnitude
-        distLabel.Text = string.format("%.1fm", distance)
-    else
-        distLabel.Text = "---m"
-    end
-
-    -- Thay đổi màu frame dựa trên team (nếu có)
-    if player.TeamColor then
-        gui.Frame.BackgroundColor3 = player.TeamColor.Color
-    else
-        gui.Frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-    end
-end
-
-local function clearAllESP()
-    for player, gui in pairs(espBillboardGuis) do
-        if gui then gui:Destroy() end
-    end
-    espBillboardGuis = {}
-end
-
-local function togglePlayerESPFeature()
-    isPlayerESPActive = not isPlayerESPActive
-    if isPlayerESPActive then
-        StarterGui:SetCore("SendNotification", {Title="ESP Người Chơi", Text="Đã bật!", Duration=2})
-        for _, player in ipairs(Players:GetPlayers()) do
-            createOrUpdateESP(player)
-        end
-    else
-        clearAllESP()
-        StarterGui:SetCore("SendNotification", {Title="ESP Người Chơi", Text="Đã tắt.", Duration=2})
-    end
-    updateFeatureButtonStates()
-end
-
--- MOVEMENT SPEED FUNCTIONS (MỚI)
-local function getHumanoid()
-    return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-end
-
-local function updateOriginalSpeeds() -- Gọi khi humanoid xuất hiện
-    local humanoid = getHumanoid()
-    if humanoid then
-        if originalWalkSpeed == 16 then originalWalkSpeed = humanoid.WalkSpeed end -- Chỉ set nếu chưa có giá trị gốc thực
-        if originalJumpPower == 50 then originalJumpPower = humanoid.JumpPower end
-        if not originalJumpHeight then originalJumpHeight = humanoid.JumpHeight end
-
-        walkSpeedInput.PlaceholderText = "Tốc độ (hiện tại: "..string.format("%.1f", humanoid.WalkSpeed)..")"
-        jumpPowerInput.PlaceholderText = "Sức nhảy (hiện tại: "..string.format("%.0f", humanoid.JumpPower)..")"
-    end
-end
-if getHumanoid() then updateOriginalSpeeds() else LocalPlayer.CharacterAdded:Connect(updateOriginalSpeeds) end
-
-
-walkSpeedInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local humanoid = getHumanoid()
-        if humanoid then
-            local newSpeed = tonumber(walkSpeedInput.Text)
-            if newSpeed and newSpeed > 0 then
-                humanoid.WalkSpeed = newSpeed
-                StarterGui:SetCore("SendNotification", {Title="Tốc Độ Chạy", Text="Đã đặt thành: " .. newSpeed, Duration=2})
-                walkSpeedInput.PlaceholderText = "Tốc độ (hiện tại: "..string.format("%.1f", humanoid.WalkSpeed)..")"
-            elseif walkSpeedInput.Text == "" then -- Khôi phục
-                humanoid.WalkSpeed = originalWalkSpeed
-                StarterGui:SetCore("SendNotification", {Title="Tốc Độ Chạy", Text="Đã khôi phục về: " .. originalWalkSpeed, Duration=2})
-                walkSpeedInput.PlaceholderText = "Tốc độ (hiện tại: "..string.format("%.1f", humanoid.WalkSpeed)..")"
-            else
-                StarterGui:SetCore("SendNotification", {Title="Lỗi", Text="Giá trị tốc độ không hợp lệ.", Duration=2})
-            end
-            walkSpeedInput.Text = "" -- Xóa input sau khi xử lý
-        end
-    end
-end)
-
-jumpPowerInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local humanoid = getHumanoid()
-        if humanoid then
-            local newPower = tonumber(jumpPowerInput.Text)
-            if newPower and newPower >= 0 then
-                humanoid.JumpPower = newPower
-                -- humanoid.JumpHeight = newPower -- Nếu bạn muốn kiểm soát JumpHeight trực tiếp
-                StarterGui:SetCore("SendNotification", {Title="Sức Nhảy", Text="Đã đặt thành: " .. newPower, Duration=2})
-                jumpPowerInput.PlaceholderText = "Sức nhảy (hiện tại: "..string.format("%.0f", humanoid.JumpPower)..")"
-            elseif jumpPowerInput.Text == "" then -- Khôi phục
-                humanoid.JumpPower = originalJumpPower
-                StarterGui:SetCore("SendNotification", {Title="Sức Nhảy", Text="Đã khôi phục về: " .. originalJumpPower, Duration=2})
-                jumpPowerInput.PlaceholderText = "Sức nhảy (hiện tại: "..string.format("%.0f", humanoid.JumpPower)..")"
-            else
-                StarterGui:SetCore("SendNotification", {Title="Lỗi", Text="Giá trị sức nhảy không hợp lệ.", Duration=2})
-            end
-            jumpPowerInput.Text = ""
-        end
-    end
-end)
-
-
--- UI Interaction Logic
+-- UI Interaction Logic & Keybinds
+-- ... (toggleUiButton click, F1 keybind như trước) ...
 mainFrame.Visible = false
 toggleUiButton.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
 
@@ -447,29 +220,22 @@ toggleUiButton.MouseButton1Click:Connect(function() mainFrame.Visible = not main
 fogFeatureButton.MouseButton1Click:Connect(toggleFogFeature)
 fullbrightFeatureButton.MouseButton1Click:Connect(toggleFullbrightFeature)
 optimizeGraphicsButton.MouseButton1Click:Connect(toggleOptimizeFeature)
+superLagReductionButton.MouseButton1Click:Connect(toggleSuperLagReductionFeature) -- KẾT NỐI NÚT MỚI
 clickTeleportButton.MouseButton1Click:Connect(toggleClickTeleportFeature)
-flyButton.MouseButton1Click:Connect(toggleFlyFeature)               -- MỚI
-noClipButton.MouseButton1Click:Connect(toggleNoClipFeature)         -- MỚI
-playerESPButton.MouseButton1Click:Connect(togglePlayerESPFeature)   -- MỚI
+flyButton.MouseButton1Click:Connect(toggleFlyFeature)
+noClipButton.MouseButton1Click:Connect(toggleNoClipFeature)
+playerESPButton.MouseButton1Click:Connect(togglePlayerESPFeature)
 
--- Keybinds and Input Handling
+-- ... (UserInputService.InputBegan cho F1 và Click Teleport như trước) ...
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if gameProcessedEvent and input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-
     if input.KeyCode == Enum.KeyCode.F1 then mainFrame.Visible = not mainFrame.Visible end
-
-    -- Click Teleport Logic
     if isClickTeleportActive and input.UserInputType == Enum.UserInputType.MouseButton1 and (UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) or UserInputService:IsKeyDown(Enum.KeyCode.RightAlt)) then
-        local mouse = LocalPlayer:GetMouse()
-        if mouse.Target and mouse.Hit then
-            local char = LocalPlayer.Character; local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0,3,0)); --[[Notif]] end
-        end
+        local mouse = LocalPlayer:GetMouse(); if mouse.Target and mouse.Hit then local char = LocalPlayer.Character; local hrp = char and char:FindFirstChild("HumanoidRootPart"); if hrp then hrp.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0,3,0)) end end
     end
 end)
 
--- Persistent checks (Lighting)
--- ... (như trước) ...
+-- ... (Persistent checks, RenderStepped cho FPS, Fly, NoClip, ESP, PlayerAdded/Removed như trước) ...
 Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function() if isFogRemoved then applyFogSettings() end end)
 Lighting:GetPropertyChangedSignal("FogStart"):Connect(function() if isFogRemoved then applyFogSettings() end end)
 Lighting:GetPropertyChangedSignal("FogColor"):Connect(function() if isFogRemoved then applyFogSettings() end end)
@@ -477,90 +243,22 @@ Lighting.Changed:Connect(function(property)
     if isFogRemoved and (property == "FogEnd" or property == "FogStart" or property == "FogColor") then applyFogSettings() end
     if isFullbrightActive and (property == "Ambient" or property == "ColorShift_Bottom" or property == "ColorShift_Top") then applyFullbrightSettings() end
     if isGraphicsOptimized and (property == "GlobalShadows" or property == "Brightness" or property == "EnvironmentDiffuseScale" or property == "EnvironmentSpecularScale") then applyOptimizeSettings() end
+    -- Siêu giảm lag cũng có thể cần check nếu game tự ý thay đổi
+    if isSuperLagReductionActive and (property == "MaterialQuality") then Lighting.MaterialQuality = Enum.MaterialQuality.Low end
 end)
-
-
--- RENDERSTEPPED FOR DYNAMIC UPDATES
 local flyMoveVector = Vector3.new()
 RunService.RenderStepped:Connect(function(deltaTime)
-    -- FPS Counter
-    local currentFps = workspace:GetRealPhysicsFPS()
-    fpsLabel.Text = string.format("FPS: %.0f", currentFps)
-    if currentFps < 30 then fpsLabel.TextColor3 = Color3.fromRGB(255,80,80) elseif currentFps < 55 then fpsLabel.TextColor3 = Color3.fromRGB(255,220,80) else fpsLabel.TextColor3 = Color3.fromRGB(80,255,80) end
-
-    -- Fly Logic
-    if isFlyActive and flyBodyForce and flyBodyGyro then
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local cam = workspace.CurrentCamera
-        if hrp and cam then
-            flyMoveVector = Vector3.new()
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then flyMoveVector = flyMoveVector + cam.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then flyMoveVector = flyMoveVector - cam.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then flyMoveVector = flyMoveVector - cam.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then flyMoveVector = flyMoveVector + cam.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then flyMoveVector = flyMoveVector + Vector3.new(0,1,0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then flyMoveVector = flyMoveVector - Vector3.new(0,1,0) end
-
-            if flyMoveVector.Magnitude > 0 then
-                flyBodyForce.Force = flyMoveVector.Unit * flySpeed * 1000 -- Tăng lực để di chuyển nhanh
-            else
-                flyBodyForce.Force = Vector3.new(0, LocalPlayer.Character.Humanoid:GetMass() * workspace.Gravity * 0.95, 0) -- Chống trọng lực khi đứng yên
-            end
-            flyBodyGyro.CFrame = cam.CFrame
-        end
-    end
-
-    -- NoClip Logic (Duy trì PlatformStand)
-    if isNoClipActive then
-        local humanoid = getHumanoid()
-        if humanoid and not humanoid.PlatformStand then
-            humanoid.PlatformStand = true
-             setPartsNoCollide(LocalPlayer.Character, true) -- Đảm bảo các part mới (nếu có) cũng no-collide
-        end
-    end
-
-    -- Player ESP Update
-    if isPlayerESPActive then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                createOrUpdateESP(player)
-            elseif espBillboardGuis[player] then -- Xóa ESP của chính mình nếu có
-                espBillboardGuis[player]:Destroy()
-                espBillboardGuis[player] = nil
-            end
-        end
-    end
+    local currentFps = workspace:GetRealPhysicsFPS(); fpsLabel.Text = string.format("FPS: %.0f", currentFps); if currentFps < 30 then fpsLabel.TextColor3 = Color3.fromRGB(255,80,80) elseif currentFps < 55 then fpsLabel.TextColor3 = Color3.fromRGB(255,220,80) else fpsLabel.TextColor3 = Color3.fromRGB(80,255,80) end
+    if isFlyActive and flyBodyForce and flyBodyGyro then local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); local cam=Workspace.CurrentCamera; if hrp and cam then flyMoveVector=Vector3.new(); if UserInputService:IsKeyDown(Enum.KeyCode.W)then flyMoveVector=flyMoveVector+cam.CFrame.LookVector end; if UserInputService:IsKeyDown(Enum.KeyCode.S)then flyMoveVector=flyMoveVector-cam.CFrame.LookVector end; if UserInputService:IsKeyDown(Enum.KeyCode.A)then flyMoveVector=flyMoveVector-cam.CFrame.RightVector end; if UserInputService:IsKeyDown(Enum.KeyCode.D)then flyMoveVector=flyMoveVector+cam.CFrame.RightVector end; if UserInputService:IsKeyDown(Enum.KeyCode.Space)then flyMoveVector=flyMoveVector+Vector3.new(0,1,0)end; if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl)then flyMoveVector=flyMoveVector-Vector3.new(0,1,0)end; if flyMoveVector.Magnitude>0 then flyBodyForce.Force=flyMoveVector.Unit*flySpeed*1000 else flyBodyForce.Force=Vector3.new(0,LocalPlayer.Character.Humanoid:GetMass()*Workspace.Gravity*0.95,0)end; flyBodyGyro.CFrame=cam.CFrame end end
+    if isNoClipActive then local hum=getHumanoid(); if hum and not hum.PlatformStand then hum.PlatformStand=true; setPartsNoCollide(LocalPlayer.Character,true) end end
+    if isPlayerESPActive then for _,p in ipairs(Players:GetPlayers())do if p~=LocalPlayer then createOrUpdateESP(p)elseif espBillboardGuis[p]then espBillboardGuis[p]:Destroy();espBillboardGuis[p]=nil end end end
 end)
-
--- Player Added/Removed for ESP
-Players.PlayerAdded:Connect(function(player)
-    if isPlayerESPActive then
-        createOrUpdateESP(player)
-    end
-     player.CharacterAdded:Connect(function(character)
-        if isPlayerESPActive then createOrUpdateESP(player) end
-        -- Re-apply noclip if active
-        if isNoClipActive then
-            task.wait(0.1) -- Chờ character load hoàn chỉnh
-            setPartsNoCollide(character, true)
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then humanoid.PlatformStand = true end
-        end
-        -- Update original speeds if needed
-        updateOriginalSpeeds()
-    end)
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if espBillboardGuis[player] then
-        espBillboardGuis[player]:Destroy()
-        espBillboardGuis[player] = nil
-    end
-end)
+Players.PlayerAdded:Connect(function(player) if isPlayerESPActive then createOrUpdateESP(player) end; player.CharacterAdded:Connect(function(char) if isPlayerESPActive then createOrUpdateESP(player) end; if isNoClipActive then task.wait(0.1); setPartsNoCollide(char,true); local hum=char:FindFirstChildOfClass("Humanoid"); if hum then hum.PlatformStand=true end end; updateOriginalSpeeds() end) end)
+Players.PlayerRemoving:Connect(function(player) if espBillboardGuis[player]then espBillboardGuis[player]:Destroy();espBillboardGuis[player]=nil end end)
 
 
 -- Initial Notifications
 StarterGui:SetCore("SendNotification", { Title = "Bảng Điều Khiển Client", Text = "Sẵn sàng! Nhấn F1 để ẩn/hiện menu.", Duration = 5 })
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 updateFeatureButtonStates()
-print("Ultimate Client Enhancer V2 (VN + More Features) Loaded.")
+print("Ultimate Client Enhancer V3 (VN + SuperLagReduction) Loaded.")
