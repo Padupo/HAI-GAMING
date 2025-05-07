@@ -1,299 +1,177 @@
--- Services
-local Lighting = game:GetService("Lighting")
-local StarterGui = game:GetService("StarterGui")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
+-- ... (Toàn bộ code UI hiện tại của bạn đến trước dòng "Add GUI to PlayerGui") ...
 
--- Original Lighting Values (to restore later)
-local originalFogEnd = Lighting.FogEnd
-local originalFogStart = Lighting.FogStart
-local originalFogColor = Lighting.FogColor
-local originalAmbient = Lighting.Ambient
-local originalColorShift_Bottom = Lighting.ColorShift_Bottom
-local originalColorShift_Top = Lighting.ColorShift_Top
+-- [[ THÊM PHẦN HIỂN THỊ STATS "NGUY HIỂM" ]]
+local statsDisplayFrame = Instance.new("Frame")
+statsDisplayFrame.Name = "StatsDisplayFrame"
+statsDisplayFrame.Size = UDim2.new(0, 230, 0, 250) -- Kích thước có thể điều chỉnh
+statsDisplayFrame.Position = UDim2.new(1, -240, 0, 10) -- Góc trên bên phải (padding 10px)
+statsDisplayFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28) -- Nền rất tối
+statsDisplayFrame.BorderColor3 = Color3.fromRGB(70, 70, 80)   -- Viền xám đậm
+statsDisplayFrame.BorderSizePixel = 1
+statsDisplayFrame.Active = true -- Cho phép tương tác nếu cần (ví dụ: kéo thả sau này)
+statsDisplayFrame.Draggable = false -- Tạm thời không cho kéo
+statsDisplayFrame.ClipsDescendants = true
+statsDisplayFrame.Parent = screenGui -- Thêm vào screenGui để luôn hiển thị
 
--- State Variables for Features
-local isFogRemoved = false
-local isFullbrightActive = false
+local statsTitleLabel = Instance.new("TextLabel")
+statsTitleLabel.Name = "StatsTitle"
+statsTitleLabel.Size = UDim2.new(1, 0, 0, 25)
+statsTitleLabel.BackgroundColor3 = Color3.fromRGB(30, 33, 40) -- Nền tiêu đề hơi sáng hơn
+statsTitleLabel.TextColor3 = Color3.fromRGB(0, 255, 127) -- Màu xanh lá cây "hacker"
+statsTitleLabel.Text = "CLIENT STATUS"
+statsTitleLabel.Font = Enum.Font.Code -- Font monospace
+statsTitleLabel.TextSize = 16
+statsTitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+statsTitleLabel.Parent = statsDisplayFrame
 
--- UI Elements
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ModernEffectsUI"
-screenGui.ResetOnSpawn = false
-screenGui.DisplayOrder = 999
+local statsPadding = Instance.new("UIPadding")
+statsPadding.PaddingLeft = UDim.new(0, 8)
+statsPadding.PaddingRight = UDim.new(0, 8)
+statsPadding.PaddingTop = UDim.new(0, 5)
+statsPadding.PaddingBottom = UDim.new(0, 8)
+statsPadding.Parent = statsDisplayFrame
 
--- Main Window
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainWindow"
-mainFrame.Size = UDim2.new(0, 300, 0, 230) -- Điều chỉnh kích thước cho các nút mới
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -115)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 38, 46)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.ClipsDescendants = true
-mainFrame.Parent = screenGui
+local statsListLayout = Instance.new("UIListLayout")
+statsListLayout.Padding = UDim.new(0, 3) -- Khoảng cách giữa các dòng stat
+statsListLayout.FillDirection = Enum.FillDirection.Vertical
+statsListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+statsListLayout.SortOrder = Enum.SortOrder.LayoutOrder -- Sắp xếp theo LayoutOrder
+statsListLayout.Parent = statsDisplayFrame
 
-local mainFrameCorner = Instance.new("UICorner")
-mainFrameCorner.CornerRadius = UDim.new(0, 8)
-mainFrameCorner.Parent = mainFrame
-
-local mainFrameStroke = Instance.new("UIStroke")
-mainFrameStroke.Color = Color3.fromRGB(25, 28, 36)
-mainFrameStroke.Thickness = 2
-mainFrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-mainFrameStroke.Parent = mainFrame
-
--- Title Bar
-local titleBar = Instance.new("Frame")
-titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.BackgroundColor3 = Color3.fromRGB(45, 48, 56)
-titleBar.BorderSizePixel = 0
-titleBar.Parent = mainFrame
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(1, -10, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.TextColor3 = Color3.fromRGB(220, 225, 230)
-titleLabel.Text = "Effects Control"
-titleLabel.Font = Enum.Font.GothamSemibold
-titleLabel.TextSize = 18
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = titleBar
-
-local accentLine = Instance.new("Frame")
-accentLine.Name = "AccentLine"
-accentLine.Size = UDim2.new(1, 0, 0, 2)
-accentLine.Position = UDim2.new(0, 0, 1, -2)
-accentLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-accentLine.BorderSizePixel = 0
-accentLine.Parent = titleBar
-
--- Content Area
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "ContentFrame"
-contentFrame.Size = UDim2.new(1, -20, 1, -(titleBar.Size.Y.Offset + 10 + 10))
-contentFrame.Position = UDim2.new(0, 10, 0, titleBar.Size.Y.Offset + 10)
-contentFrame.BackgroundTransparency = 1
-contentFrame.Parent = mainFrame
-
--- Nút No Fog
-local fogFeatureButton = Instance.new("TextButton")
-fogFeatureButton.Name = "FogFeatureButton"
-fogFeatureButton.Size = UDim2.new(1, 0, 0, 40) -- Chiều cao nút
-fogFeatureButton.Position = UDim2.new(0, 0, 0, 10) -- Nút đầu tiên, padding trên
-fogFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66) -- Màu nút mặc định
-fogFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
-fogFeatureButton.Text = "Enable No Fog"
-fogFeatureButton.Font = Enum.Font.SourceSansSemibold
-fogFeatureButton.TextSize = 16
-fogFeatureButton.Parent = contentFrame
-
-local fogButtonCorner = Instance.new("UICorner")
-fogButtonCorner.CornerRadius = UDim.new(0, 6)
-fogButtonCorner.Parent = fogFeatureButton
-
-local fogButtonStroke = Instance.new("UIStroke")
-fogButtonStroke.Color = Color3.fromRGB(40, 43, 50)
-fogButtonStroke.Thickness = 1.5
-fogButtonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-fogButtonStroke.Parent = fogFeatureButton
-
--- Nút Full Bright
-local fullbrightFeatureButton = Instance.new("TextButton")
-fullbrightFeatureButton.Name = "FullbrightFeatureButton"
-fullbrightFeatureButton.Size = UDim2.new(1, 0, 0, 40)
-fullbrightFeatureButton.Position = UDim2.new(0, 0, 0, fogFeatureButton.Position.Y.Offset + fogFeatureButton.Size.Y.Offset + 10) -- Dưới nút Fog, padding
-fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66)
-fullbrightFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
-fullbrightFeatureButton.Text = "Enable Full Bright"
-fullbrightFeatureButton.Font = Enum.Font.SourceSansSemibold
-fullbrightFeatureButton.TextSize = 16
-fullbrightFeatureButton.Parent = contentFrame
-
-local fullbrightButtonCorner = Instance.new("UICorner")
-fullbrightButtonCorner.CornerRadius = UDim.new(0, 6)
-fullbrightButtonCorner.Parent = fullbrightFeatureButton
-
-local fullbrightButtonStroke = Instance.new("UIStroke")
-fullbrightButtonStroke.Color = Color3.fromRGB(40, 43, 50)
-fullbrightButtonStroke.Thickness = 1.5
-fullbrightButtonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-fullbrightButtonStroke.Parent = fullbrightFeatureButton
-
-
--- Nút bật/tắt UI
-local toggleUiButton = Instance.new("TextButton")
-toggleUiButton.Name = "ToggleUiButton"
-toggleUiButton.Size = UDim2.new(0, 120, 0, 30)
-toggleUiButton.Position = UDim2.new(0, 15, 0, 15)
-toggleUiButton.BackgroundColor3 = Color3.fromRGB(45, 48, 56)
-toggleUiButton.TextColor3 = Color3.fromRGB(220, 225, 230)
-toggleUiButton.Text = "Toggle UI (F1)"
-toggleUiButton.Font = Enum.Font.SourceSansBold
-toggleUiButton.TextSize = 14
-toggleUiButton.Parent = screenGui
-
-local toggleUiCorner = Instance.new("UICorner")
-toggleUiCorner.CornerRadius = UDim.new(0, 6)
-toggleUiCorner.Parent = toggleUiButton
-
-local toggleUiStroke = Instance.new("UIStroke")
-toggleUiStroke.Color = Color3.fromRGB(25, 28, 36)
-toggleUiStroke.Thickness = 1.5
-toggleUiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-toggleUiStroke.Parent = toggleUiButton
-
--- FUNCTIONS FOR FEATURES
-local function updateFeatureButtonStates()
-    if isFogRemoved then
-        fogFeatureButton.Text = "Disable No Fog (Active)"
-        fogFeatureButton.BackgroundColor3 = Color3.fromRGB(76, 175, 80) -- Green
-        fogFeatureButton.TextColor3 = Color3.fromRGB(240, 240, 240)
-    else
-        fogFeatureButton.Text = "Enable No Fog"
-        fogFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66) -- Default
-        fogFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
-    end
-
-    if isFullbrightActive then
-        fullbrightFeatureButton.Text = "Disable Full Bright (Active)"
-        fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(76, 175, 80) -- Green
-        fullbrightFeatureButton.TextColor3 = Color3.fromRGB(240, 240, 240)
-    else
-        fullbrightFeatureButton.Text = "Enable Full Bright"
-        fullbrightFeatureButton.BackgroundColor3 = Color3.fromRGB(55, 58, 66) -- Default
-        fullbrightFeatureButton.TextColor3 = Color3.fromRGB(200, 205, 210)
-    end
+local function createStatTextLabel(labelText, order)
+    local label = Instance.new("TextLabel")
+    label.Name = labelText:gsub("%s+", "") .. "Label" -- Tạo tên không có khoảng trắng
+    label.Size = UDim2.new(1, 0, 0, 16) -- Chiều cao mỗi dòng stat
+    label.BackgroundTransparency = 1
+    label.Text = labelText .. ": ..." -- Văn bản ban đầu
+    label.Font = Enum.Font.Code
+    label.TextSize = 13
+    label.TextColor3 = Color3.fromRGB(200, 205, 210) -- Màu chữ mặc định
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.LayoutOrder = order -- Quan trọng cho UIListLayout
+    label.Parent = statsDisplayFrame
+    return label
 end
 
-local function applyFogSettings()
-    Lighting.FogEnd = 1e10
-    Lighting.FogStart = 1e10
-    Lighting.FogColor = Color3.new(1, 1, 1)
-end
+-- Tạo các label cho từng thông số
+local fpsStatLabel = createStatTextLabel("FPS", 1)
+local pingStatLabel = createStatTextLabel("Ping", 2)
+local usernameStatLabel = createStatTextLabel("Username", 3)
+local userIdStatLabel = createStatTextLabel("User ID", 4)
+local healthStatLabel = createStatTextLabel("Health", 5)
+local walkSpeedStatLabel = createStatTextLabel("WalkSpeed", 6)
+local jumpHeightStatLabel = createStatTextLabel("Jump", 7)
+local positionStatLabel = createStatTextLabel("Position", 8)
+local placeIdStatLabel = createStatTextLabel("Place ID", 9)
+local jobIdStatLabel = createStatTextLabel("Server ID", 10)
+local clientUptimeStatLabel = createStatTextLabel("Uptime", 11)
 
-local function restoreFogSettings()
-    Lighting.FogEnd = originalFogEnd
-    Lighting.FogStart = originalFogStart
-    Lighting.FogColor = originalFogColor
-end
+-- Thiết lập thông tin tĩnh một lần
+local LocalPlayer = Players.LocalPlayer
+usernameStatLabel.Text = "Username: " .. LocalPlayer.Name .. " (@" .. LocalPlayer.DisplayName .. ")"
+userIdStatLabel.Text = "User ID: " .. LocalPlayer.UserId
+placeIdStatLabel.Text = "Place ID: " .. game.PlaceId
+jobIdStatLabel.Text = "Server ID: " .. game.JobId
 
-local function applyFullbrightSettings()
-    Lighting.Ambient = Color3.new(1, 1, 1)
-    Lighting.ColorShift_Bottom = Color3.new(1, 1, 1)
-    Lighting.ColorShift_Top = Color3.new(1, 1, 1)
-end
+local clientScriptStartTime = tick() -- Thời điểm script bắt đầu chạy
 
-local function restoreFullbrightSettings()
-    Lighting.Ambient = originalAmbient
-    Lighting.ColorShift_Bottom = originalColorShift_Bottom
-    Lighting.ColorShift_Top = originalColorShift_Top
-end
+-- [[ KẾT THÚC PHẦN HIỂN THỊ STATS ]]
 
-local function toggleFogFeature()
-    isFogRemoved = not isFogRemoved
-    if isFogRemoved then
-        applyFogSettings()
-        StarterGui:SetCore("SendNotification", {
-            Title = "No Fog",
-            Text = "Activated!",
-            Duration = 2
-        })
-    else
-        restoreFogSettings()
-        StarterGui:SetCore("SendNotification", {
-            Title = "No Fog",
-            Text = "Deactivated.",
-            Duration = 2
-        })
-    end
-    updateFeatureButtonStates()
-end
-
-local function toggleFullbrightFeature()
-    isFullbrightActive = not isFullbrightActive
-    if isFullbrightActive then
-        applyFullbrightSettings()
-        StarterGui:SetCore("SendNotification", {
-            Title = "Full Bright",
-            Text = "Activated!",
-            Duration = 2
-        })
-    else
-        restoreFullbrightSettings()
-        StarterGui:SetCore("SendNotification", {
-            Title = "Full Bright",
-            Text = "Deactivated.",
-            Duration = 2
-        })
-    end
-    updateFeatureButtonStates()
-end
-
--- UI Interaction Logic
-mainFrame.Visible = false -- Bắt đầu ẩn
-
-toggleUiButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
-end)
-
-UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end
-    if input.KeyCode == Enum.KeyCode.F1 then
-        mainFrame.Visible = not mainFrame.Visible
-    end
-end)
-
--- Connect Feature Button Clicks
-fogFeatureButton.MouseButton1Click:Connect(toggleFogFeature)
-fullbrightFeatureButton.MouseButton1Click:Connect(toggleFullbrightFeature)
-
--- Persistent checks (from original script, but conditional)
-Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
-    if isFogRemoved then applyFogSettings() end
-end)
-Lighting:GetPropertyChangedSignal("FogStart"):Connect(function()
-    if isFogRemoved then applyFogSettings() end
-end)
-Lighting:GetPropertyChangedSignal("FogColor"):Connect(function()
-    if isFogRemoved then applyFogSettings() end
-end)
-Lighting.Changed:Connect(function(property)
-    if property == "FogEnd" or property == "FogStart" or property == "FogColor" then
-        if isFogRemoved then applyFogSettings() end
-    end
-    -- For fullbright, LightingChanged is more general
-end)
-
-Lighting.LightingChanged:Connect(function() -- Catches Ambient, ColorShift changes
-    if isFullbrightActive then applyFullbrightSettings() end
-end)
-
-
--- Initial Notifications (as in your original script)
-StarterGui:SetCore(
-    "SendNotification",
-    {
-        Title = "No Fog", -- Sửa lại từ "Frog"
-        Text = "Controller Ready",
-        Duration = 2
-})
-StarterGui:SetCore(
-    "SendNotification",
-    {
-        Title = "Full Bright",
-        Text = "Controller Ready",
-        Duration = 3
-})
+-- ... (Code UI chính của bạn (mainFrame, titleBar, contentFrame, các nút chức năng, v.v.)) ...
+-- ... (Các hàm toggleFogFeature, toggleFullbrightFeature, updateFeatureButtonStates, v.v.) ...
+-- ... (Các kết nối sự kiện cho nút và Lighting) ...
+-- ... (Các thông báo ban đầu) ...
 
 -- Add GUI to PlayerGui
-screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Initialize button states on load
+-- Initialize button states on load (cho UI chính)
 updateFeatureButtonStates()
 
-print("Modern Effects UI with Features Loaded.")
+-- Welcome Notification
+StarterGui:SetCore("SendNotification", {
+    Title = "Chào mừng!",
+    Text = "Script điều khiển hiệu ứng đã sẵn sàng. Nhấn F1 để mở/đóng UI.",
+    Duration = 5
+})
+
+-- [[ THÊM VÒNG LẶP CẬP NHẬT STATS ]]
+local RunService = game:GetService("RunService")
+local lastCharacter = nil
+local lastHumanoid = nil
+
+RunService.RenderStepped:Connect(function(deltaTime)
+    -- FPS
+    local currentFps = workspace:GetRealPhysicsFPS()
+    fpsStatLabel.Text = "FPS: " .. string.format("%.0f", currentFps)
+    if currentFps < 30 then
+        fpsStatLabel.TextColor3 = Color3.fromRGB(255, 80, 80) -- Đỏ
+    elseif currentFps < 55 then
+        fpsStatLabel.TextColor3 = Color3.fromRGB(255, 220, 80) -- Vàng
+    else
+        fpsStatLabel.TextColor3 = Color3.fromRGB(80, 255, 80) -- Xanh lá
+    end
+
+    -- Ping
+    local currentPing = LocalPlayer:GetNetworkPing() * 1000 -- Chuyển sang ms
+    pingStatLabel.Text = "Ping: " .. string.format("%.0f ms", currentPing)
+     if currentPing > 200 then
+        pingStatLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+    elseif currentPing > 100 then
+        pingStatLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
+    else
+        pingStatLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+    end
+
+    -- Thông tin nhân vật (chỉ cập nhật nếu có thay đổi hoặc humanoid tồn tại)
+    local character = LocalPlayer.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if humanoid ~= lastHumanoid or humanoid.Health ~= humanoid.MaxHealth then -- Tối ưu hóa
+                healthStatLabel.Text = string.format("Health: %.0f / %.0f", humanoid.Health, humanoid.MaxHealth)
+                if humanoid.Health < humanoid.MaxHealth * 0.3 then
+                    healthStatLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+                elseif humanoid.Health < humanoid.MaxHealth * 0.7 then
+                    healthStatLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
+                else
+                    healthStatLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+                end
+            end
+
+            walkSpeedStatLabel.Text = "WalkSpeed: " .. string.format("%.1f", humanoid.WalkSpeed)
+            jumpHeightStatLabel.Text = "Jump: " .. string.format("%.1f", humanoid.JumpHeight) -- Hoặc humanoid.JumpPower
+
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local pos = hrp.Position
+                positionStatLabel.Text = string.format("Position: X:%.1f Y:%.1f Z:%.1f", pos.X, pos.Y, pos.Z)
+            else
+                positionStatLabel.Text = "Position: N/A (No HRP)"
+            end
+            lastHumanoid = humanoid
+        else
+            healthStatLabel.Text = "Health: N/A (No Humanoid)"
+            walkSpeedStatLabel.Text = "WalkSpeed: N/A"
+            jumpHeightStatLabel.Text = "Jump: N/A"
+            positionStatLabel.Text = "Position: N/A"
+            lastHumanoid = nil
+        end
+    else
+        healthStatLabel.Text = "Health: N/A (No Character)"
+        walkSpeedStatLabel.Text = "WalkSpeed: N/A"
+        jumpHeightStatLabel.Text = "Jump: N/A"
+        positionStatLabel.Text = "Position: N/A"
+        lastHumanoid = nil
+    end
+
+    -- Client Uptime
+    local uptimeSeconds = tick() - clientScriptStartTime
+    local hours = math.floor(uptimeSeconds / 3600)
+    local minutes = math.floor((uptimeSeconds % 3600) / 60)
+    local seconds = math.floor(uptimeSeconds % 60)
+    clientUptimeStatLabel.Text = string.format("Uptime: %02d:%02d:%02d", hours, minutes, seconds)
+end)
+-- [[ KẾT THÚC VÒNG LẶP CẬP NHẬT STATS ]]
+
+print("Modern Effects UI with Features and Stats Loaded.")
